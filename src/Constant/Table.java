@@ -12,7 +12,8 @@ package Constant;
 public class Table {
 
     public static class Transaksi {
-        public static String TABEL = "transaksi";
+
+        public static String TABLE = "transaksi";
         public static String IDTRANSAKSI = "idtransaksi";
         public static String TANGGAL = "tanggal_transaksi";
         public static String TAGIHAN = "tagihan";
@@ -21,43 +22,101 @@ public class Table {
     }
 
     public static class TransaksiDetail {
-        public static String TABEL = "transaksi_detail";
+
+        public static String TABLE = "transaksi_detail";
         public static String IDTRANSAKSI = "idtransaksi";
         public static String IDBARANG = "idbarang";
         public static String JUMLAH = "jumlah";
         public static String HAPUS = "hapus";
     }
-    public static class DataBarang{
-        
+
+    public static class DataBarang {
+
+        public static String TABLE = "data_barang";
+        public static String IDBARANG = "idbarang";
+        public static String NAMA_BARANG = "nama_barang";
+        public static String IDSATUAN = "idsatuan";
+        public static String HAPUS = "hapus";
     }
-    public static class DataSatuan{
-        
+
+    public static class DataSatuan {
+
+        public static String TABLE = "data_satuan";
+        public static String IDSATUAN = "idsatuan";
+        public static String NAMA_SATUAN = "nama_satuan";
+        public static String HAPUS = "hapus";
     }
-    public static class BarangHarga{
-        
+
+    public static class BarangHarga {
+
+        public static String TABLE = "barang_harga";
+        public static String IDBARANG = "idbarang";
+        public static String TANGGAL = "tanggal_harga";
+        public static String HARGA = "harga";
+        public static String QTY = "qty";
+        public static String HAPUS = "hapus";
     }
-    public static class BarangStok{
-        
+
+    public static class BarangStok {
+
+        public static String TABLE = "barang_stok";
+        public static String IDBARANG = "idbarang";
+        public static String STOK = "stok";
+        public static String HAPUS = "hapus";
     }
-    public static class BarangMasuk{
-        
+
+    public static class BarangMasuk {
+
+        public static String TABLE = "barang_masuk";
+        public static String IDBARANG = "idbarang";
+        public static String TANGGAL = "tanggal_masuk";
+        public static String QTY = "qty";
+        public static String HARGA_KULAK = "harga_kulak";
+        public static String HAPUS = "hapus";
+
     }
-    public static class Retur{
-        
+
+    public static class Retur {
+
     }
-    public static class ReturDetail{
-        
+
+    public static class ReturDetail {
+
     }
-    public static class KeuanganAkun{
-        
+
+    public static class KeuanganAkun {
+
+        public static String TABLE = "keuangan_akun";
+        public static String IDAKUN = "idakun";
+        public static String IDKELOMPOK = "idkelompok";
+        public static String NAMA_AKUN = "nama_akun";
+        public static String STATIS = "statis";
+        public static String HAPUS = "hapus";
+
     }
-    public static class KeuanganJurnal{
-        
+
+    public static class KeuanganJurnal {
+
+        public static String TABLE = "keuangan_jurnal";
+        public static String TANGGAL = "tanggal";
+        public static String IDAKUN = "idakun";
+        public static String DEBET = "debet";
+        public static String KREDIT = "kredit";
+        public static String KETERANGAN = "keterangan";
     }
-    public static class KeuanganKelompok{
-        
+
+    public static class KeuanganKelompok {
+
+        public static String TABLE = "idkelompok";
+        public static String NAMA_KELOMPOK = "nama_kelompok";
+        public static String JENIS = "jenis";
+        public static String HAPUS = "hapus";
     }
-    public static class KeuanganSaldo{
-        
+
+    public static class KeuanganSaldo {
+
+        public static String TABLE = "keuangan_saldo";
+        public static String DEBET = "debet";
+        public static String KREDIT = "kredit";
     }
 }
