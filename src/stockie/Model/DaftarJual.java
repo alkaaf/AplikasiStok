@@ -21,7 +21,7 @@ public class DaftarJual {
     public DaftarJual() {
     }
 
-    public DaftarJual(int idBarang,String namaBarang, double stok, String satuan, double qty, double harga) {
+    public DaftarJual(int idBarang, String namaBarang, double stok, String satuan, double qty, double harga) {
         this.namaBarang = namaBarang;
         this.idBarang = idBarang;
         this.stok = stok;
@@ -81,6 +81,10 @@ public class DaftarJual {
     @Override
     public String toString() {
 //        return super.toString(); //To change body of generated methods, choose Tools | Templates.
-        return String.format("[ID%d] %s", idBarang, namaBarang);
+        if (idBarang == 0) {
+            return "";
+        } else {
+            return String.format("[ID%d] %s", idBarang, namaBarang);
+        }
     }
 }
