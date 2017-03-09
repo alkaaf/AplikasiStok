@@ -77,7 +77,8 @@ public class DBHelperRekapTransaksi {
                 + "harga." + Table.BarangHarga.HARGA + ", "
                 + "harga." + Table.BarangHarga.QTY + ", "
                 + "satuan." + Table.DataSatuan.NAMA_SATUAN + ", "
-                + "detail." + Table.TransaksiDetail.JUMLAH + " "
+                + "detail." + Table.TransaksiDetail.JUMLAH + ", "
+                + "detail."+Table.TransaksiDetail.HARGATOTAL+" "
                 + "from "
                 + Table.DataSatuan.TABLE + " satuan, "
                 + Table.TransaksiDetail.TABLE + " detail, "
@@ -103,6 +104,7 @@ public class DBHelperRekapTransaksi {
                 tempDetail.setSatuan(rs.getString(Table.DataSatuan.NAMA_SATUAN));
                 tempDetail.setHargaSatuan(rs.getDouble(Table.BarangHarga.HARGA));
                 tempDetail.setJumlah(rs.getDouble(Table.TransaksiDetail.JUMLAH));
+                tempDetail.setHargaTotal(rs.getDouble(Table.TransaksiDetail.HARGATOTAL));
                 temp.add(tempDetail);
             }
         } catch (SQLException ex) {

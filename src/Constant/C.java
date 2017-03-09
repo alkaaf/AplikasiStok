@@ -14,4 +14,6 @@ public class C {
     public static String DATE_FORMAT = "dd-MM-yyyy HH:mm";
     public static String SF_TRANSAKSI = "TRX%06d";
     public static String SF_BARANG = "ID%06d";
+    public static String SF_BELI = "IDB%06d";
+    public static String SF_RETUR = "IDR%06d";
 }

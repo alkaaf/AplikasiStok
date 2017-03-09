@@ -302,7 +302,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
         dateEnd = new org.jdesktop.swingx.JXDatePicker();
         setTanggal = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Pilih Barang");
 
@@ -664,7 +664,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             if (isStockAvailable(selected.getIdBarang(), jumlahBeli)) {
                 TransaksiDetail detail = new TransaksiDetail();
                 Vector row = new Vector();
-
+                double hargaTotal = (selected.getHarga()/selected.getQty()) * jumlahBeli;
                 // set Detail transaksi
                 detail.setIdBarang(selected.getIdBarang());
                 detail.setJumlah(jumlahBeli);
@@ -672,7 +672,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
                 detail.setHargaSatuan(selected.getHarga());
                 detail.setNamaBarang(selected.getNamaBarang());
                 detail.setSatuan(selected.getSatuan());
-
+                detail.setHargaTotal(hargaTotal);
                 // tambah detail
                 transaksiDetail.add(detail);
 
@@ -715,6 +715,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             // close db
             dbHelper.close();
             initData();
+            initDataTransaksi(-1, -1);
         } else {
             JOptionPane.showMessageDialog(rootPane, "Pembayaran tidak mencukupi", "Peringatan", JOptionPane.ERROR_MESSAGE);
             iBayar.requestFocus();

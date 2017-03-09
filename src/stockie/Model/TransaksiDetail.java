@@ -47,13 +47,15 @@ public class TransaksiDetail {
     public void setJumlahSatuan(double jumlahSatuan) {
         this.jumlahSatuan = jumlahSatuan;
     }
-    
-    
 
     public double getHargaTotal() {
-        return (hargaSatuan / jumlahSatuan) * jumlah;
-//        return hargaTotal;
+        return hargaTotal;
     }
+
+    public void setHargaTotal(double hargaTotal) {
+        this.hargaTotal = hargaTotal;
+    }
+    
 
     public int getIdBarang() {
         return idBarang;

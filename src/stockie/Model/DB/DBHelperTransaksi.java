@@ -134,14 +134,15 @@ public class DBHelperTransaksi {
         String sql = "insert into " + Table.TransaksiDetail.TABLE + "("
                 + Table.TransaksiDetail.IDTRANSAKSI + ","
                 + Table.TransaksiDetail.IDBARANG + ","
-                + Table.TransaksiDetail.JUMLAH
-                + ") values (?,?,?)";
+                + Table.TransaksiDetail.JUMLAH + ","
+                +Table.TransaksiDetail.HARGATOTAL
+                + ") values (?,?,?,?)";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setInt(1, detail.getIdTransaksi());
             ps.setInt(2, detail.getIdBarang());
             ps.setDouble(3, detail.getJumlah());
-//            ps.setInt(4, 0);
+            ps.setDouble(4, detail.getHargaTotal());
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);

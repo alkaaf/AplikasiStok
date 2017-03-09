@@ -29,6 +29,7 @@ public class Table {
         public static String IDBARANG = "idbarang";
         public static String JUMLAH = "jumlah";
         public static String HAPUS = "hapus";
+        public static String HARGATOTAL = "harga_total";
     }
 
     public static class DataBarang {
@@ -67,7 +68,7 @@ public class Table {
     }
 
     public static class BarangMasuk {
-
+        public static String IDMASUK = "idmasuk";
         public static String TABLE = "barang_masuk";
         public static String IDBARANG = "idbarang";
         public static String TANGGAL = "tanggal_masuk";
@@ -108,10 +109,11 @@ public class Table {
 
     public static class KeuanganKelompok {
 
-        public static String TABLE = "idkelompok";
+        public static String TABLE = "keuangan_kelompok";
         public static String NAMA_KELOMPOK = "nama_kelompok";
         public static String JENIS = "jenis";
         public static String HAPUS = "hapus";
+        public static String IDKELOMPOK = "idkelompok";
     }
 
     public static class KeuanganSaldo {
@@ -119,5 +121,6 @@ public class Table {
         public static String TABLE = "keuangan_saldo";
         public static String DEBET = "debet";
         public static String KREDIT = "kredit";
+        public static String IDAKUN = "idakun";
     }
 }
