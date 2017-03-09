@@ -5,22 +5,29 @@
  */
 package stockie.Model;
 
+import Constant.C;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Vector;
+
 /**
  *
  * @author dalbo
  */
 public class Transaksi {
     int idTransaksi;
-    String tanggal;
+    long tanggal;
     double tagihan;
     double bayar;
     double kembalian;
     String keterangan;
-
+    SimpleDateFormat sdf;
     public Transaksi() {
+        sdf = new SimpleDateFormat(C.DATE_FORMAT);
     }
 
-    public Transaksi(String tanggal, double tagihan, double bayar, double kembalian, String keterangan) {
+    public Transaksi(long tanggal, double tagihan, double bayar, double kembalian, String keterangan) {
+        sdf = new SimpleDateFormat(C.DATE_FORMAT);
         this.tanggal = tanggal;
         this.tagihan = tagihan;
         this.bayar = bayar;
@@ -28,7 +35,8 @@ public class Transaksi {
         this.keterangan = keterangan;
     }
 
-    public Transaksi(int idTransaksi, String tanggal, double tagihan, double bayar, double kembalian, String keterangan) {
+    public Transaksi(int idTransaksi, long tanggal, double tagihan, double bayar, double kembalian, String keterangan) {
+        sdf = new SimpleDateFormat(C.DATE_FORMAT);
         this.idTransaksi = idTransaksi;
         this.tanggal = tanggal;
         this.tagihan = tagihan;
@@ -45,11 +53,11 @@ public class Transaksi {
         this.idTransaksi = idTransaksi;
     }
 
-    public String getTanggal() {
+    public long getTanggal() {
         return tanggal;
     }
 
-    public void setTanggal(String tanggal) {
+    public void setTanggal(long tanggal) {
         this.tanggal = tanggal;
     }
 
@@ -83,6 +91,17 @@ public class Transaksi {
 
     public void setKeterangan(String keterangan) {
         this.keterangan = keterangan;
+    }
+    
+    public Vector getRow(){
+        Vector vector = new Vector();
+        vector.add(String.format(C.SF_TRANSAKSI, idTransaksi));
+        vector.add(sdf.format(new Date(tanggal)));
+        vector.add(tagihan);
+        vector.add(bayar);
+        vector.add(kembalian);
+        vector.add(keterangan);
+        return vector;
     }
     
 }

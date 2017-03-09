@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stockie.Model;
+package stockie.Model.DB;
 
 import Constant.C;
 import Constant.Table;
@@ -20,33 +20,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import stockie.Model.DaftarJual;
+import stockie.Model.Transaksi;
+import stockie.Model.TransaksiDetail;
 
 /**
  *
  * @author dalbo
  */
-public class DBHelper {
+public class DBHelperTransaksi {
 
     Connection c;
-//todo tambah close;
-    public DBHelper() {
+
+    public DBHelperTransaksi() {
         try {
             c = DriverManager.getConnection("jdbc:sqlite://" + C.DB_PATH);
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public int insert(String tabel, String kolom, String value) {
-        Statement st;
-        int res = 0;
-        try {
-            st = c.createStatement();
-            res = st.executeUpdate("INSERT INTO " + tabel + "(" + kolom + ") VALUES (" + value + ")");
-        } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return res;
     }
 
     public int delete(String tabel, String columnId, int id) {
@@ -56,7 +47,7 @@ public class DBHelper {
             st = c.createStatement();
             res = st.executeUpdate("DELETE FROM " + tabel + " WHERE " + columnId + "=" + id);
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return res;
     }
@@ -68,7 +59,7 @@ public class DBHelper {
             st = c.createStatement();
             res = st.executeUpdate("DELETE FROM " + tabel + " WHERE " + columnId + "='" + id + "'");
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return res;
     }
@@ -81,7 +72,7 @@ public class DBHelper {
             rs.next();
             stok = rs.getDouble(Table.BarangStok.STOK);
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return stok;
     }
@@ -94,11 +85,11 @@ public class DBHelper {
             ps.setInt(1, idBarang);
             rs = ps.executeQuery();
             harga = rs.getDouble(Table.BarangHarga.HARGA);
-           
+
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return harga;
     }
 
@@ -115,7 +106,7 @@ public class DBHelper {
             }
 
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return id + 1;
@@ -134,17 +125,17 @@ public class DBHelper {
             ps.setInt(7, 0);
             ps.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
 
     public void insertTrasaksiDetail(TransaksiDetail detail) {
-        String sql = "insert into " + Table.TransaksiDetail.TABLE + "("+
-                Table.TransaksiDetail.IDTRANSAKSI+","+
-                Table.TransaksiDetail.IDBARANG+","+
-                Table.TransaksiDetail.JUMLAH+
-                ") values (?,?,?)";
+        String sql = "insert into " + Table.TransaksiDetail.TABLE + "("
+                + Table.TransaksiDetail.IDTRANSAKSI + ","
+                + Table.TransaksiDetail.IDBARANG + ","
+                + Table.TransaksiDetail.JUMLAH
+                + ") values (?,?,?)";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setInt(1, detail.getIdTransaksi());
@@ -153,7 +144,7 @@ public class DBHelper {
 //            ps.setInt(4, 0);
             ps.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -169,7 +160,7 @@ public class DBHelper {
             ps.setInt(2, idBarang);
             ps.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }
@@ -186,7 +177,7 @@ public class DBHelper {
             ps.setInt(2, idBarang);
             ps.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -228,8 +219,19 @@ public class DBHelper {
                 ));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
         return daftarJual;
+    }
+
+    public void close() {
+        try {
+            if (!c.isClosed()) {
+                c.close();
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
     }
 }

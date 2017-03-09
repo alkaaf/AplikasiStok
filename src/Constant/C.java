@@ -11,4 +11,7 @@ package Constant;
  */
 public class C {
     public static String DB_PATH = "E:\\selfproj\\Stockie\\stockie.db";
+    public static String DATE_FORMAT = "dd-MM-yyyy HH:mm";
+    public static String SF_TRANSAKSI = "TRX%06d";
+    public static String SF_BARANG = "ID%06d";
 }

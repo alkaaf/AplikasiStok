@@ -19,6 +19,7 @@ public class Table {
         public static String TAGIHAN = "tagihan";
         public static String BAYAR = "bayar";
         public static String KEMBALIAN = "kembalian";
+        public static String KETERANGAN = "keterangan";
     }
 
     public static class TransaksiDetail {
