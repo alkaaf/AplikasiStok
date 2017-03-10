@@ -117,7 +117,7 @@ public class DBHelperTransaksi {
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setInt(1, transaksi.getIdTransaksi());
-            ps.setString(2, Long.toString(System.currentTimeMillis()));
+            ps.setLong(2, transaksi.getTanggal());
             ps.setDouble(3, transaksi.getTagihan());
             ps.setDouble(4, transaksi.getBayar());
             ps.setDouble(5, transaksi.getKembalian());

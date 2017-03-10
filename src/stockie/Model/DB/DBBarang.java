@@ -47,7 +47,7 @@ public class DBBarang extends DBHelper {
         } catch (SQLException ex) {
             Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
     public void insertBarang(int idBarang, String namaBarang, int satuan) {
@@ -84,6 +84,24 @@ public class DBBarang extends DBHelper {
         } catch (SQLException ex) {
             Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public double getHargaKulakSatuan(int idBarang) {
+        double harga = 0;
+        final String alias = "harga_kulak_satuan";
+        ResultSet rs;
+        String sql = "select harga_kulak/qty " + alias + " from barang_masuk where " + Table.BarangMasuk.IDBARANG + "=?";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idBarang);
+            rs = ps.executeQuery();
+            if (!rs.isClosed()) {
+                harga = rs.getDouble(alias);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return harga;
 
     }
 

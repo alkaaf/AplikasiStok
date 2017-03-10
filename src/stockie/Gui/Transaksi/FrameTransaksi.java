@@ -5,6 +5,7 @@
  */
 package stockie.Gui.Transaksi;
 
+import Constant.C;
 import Constant.Table;
 import com.sun.org.apache.bcel.internal.generic.ISTORE;
 import java.awt.Color;
@@ -29,8 +30,10 @@ import javax.swing.table.DefaultTableModel;
 import org.jdatepicker.JDatePicker;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
+import stockie.Model.DB.DBBarang;
 import stockie.Model.DB.DBHelperRekapTransaksi;
 import stockie.Model.DB.DBHelperTransaksi;
+import stockie.Model.DB.DBKeuangan;
 import stockie.Model.DaftarJual;
 import stockie.Model.Transaksi;
 import stockie.Model.TransaksiDetail;
@@ -41,7 +44,6 @@ import stockie.Model.TransaksiDetail;
  */
 public class FrameTransaksi extends javax.swing.JFrame {
 
-    DBHelperTransaksi dbHelper;
 
     /**
      * Creates new form FrameTransaksi
@@ -49,7 +51,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
     public FrameTransaksi() {
         initComponents();
         initData();
-        initDataTransaksi(-1,-1);
+        initDataTransaksi(-1, -1);
     }
 
     /**
@@ -57,8 +59,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
      */
     DefaultComboBoxModel<String> daftarJualModel;
     List<DaftarJual> daftarJualList;
-    Transaksi transaksi;
-    List<TransaksiDetail> transaksiDetail;
+
     DaftarJual selected;
     DefaultTableModel tableModel;
     final String[] columnName = new String[]{"ID Barang", "Nama Barang", "Satuan", "Harga Satuan", "Jumlah Beli", "Total"};
@@ -67,10 +68,11 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
         // init tanggal
         // init dbhelper
-        dbHelper = new DBHelperTransaksi();
+        DBHelperTransaksi dbHelper = new DBHelperTransaksi();
         // init daftar barang
         daftarJualModel = new DefaultComboBoxModel<>();
         daftarJualList = dbHelper.getBarangJual();
+        dbHelper.close();
         transaksiDetail = new ArrayList<>();
         transaksi = new Transaksi();
         daftarJualList.add(0, new DaftarJual());
@@ -86,8 +88,8 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     }
 
-    public FrameTransaksi(DBHelperTransaksi dbHelper, DefaultComboBoxModel<String> daftarJualModel, List<DaftarJual> daftarJualList, Transaksi transaksi, List<TransaksiDetail> transaksiDetail, DaftarJual selected, DefaultTableModel tableModel, JButton bHapus, JTextField iBayar, JTextField iHarga, JTextField iIdTransaksi, JTextField iJumlahBeli, JTextField iKembalian, JTextArea iKeterangan, JTextField iNamaBarang, JTextField iStok, JTextField iTotal, JButton jButton1, JButton jButton2, JButton jButton3, JComboBox<String> jComboBox1, JComboBox<String> jComboBox2, JComboBox<String> jComboBox3, JComboBox<String> jComboBox4, JComboBox<String> jComboBox5, JComboBox<String> jComboBox6, JLabel jLabel1, JLabel jLabel10, JLabel jLabel11, JLabel jLabel12, JLabel jLabel13, JLabel jLabel14, JLabel jLabel15, JLabel jLabel2, JLabel jLabel3, JLabel jLabel4, JLabel jLabel5, JLabel jLabel6, JLabel jLabel7, JLabel jLabel8, JLabel jLabel9, JPanel jPanel1, JPanel jPanel2, JScrollPane jScrollPane1, JScrollPane jScrollPane2, JScrollPane jScrollPane3, JScrollPane jScrollPane4, JSeparator jSeparator1, JSeparator jSeparator2, JSeparator jSeparator3, JSeparator jSeparator4, JTabbedPane jTabbedPane1, JComboBox<String> listDaftarBarang, JTable tDaftarTransaksi, JTable tDetailTransaksi, JTable tableDetail) throws HeadlessException {
-        this.dbHelper = dbHelper;
+    public FrameTransaksi(DefaultComboBoxModel<String> daftarJualModel, List<DaftarJual> daftarJualList, Transaksi transaksi, List<TransaksiDetail> transaksiDetail, DaftarJual selected, DefaultTableModel tableModel, JButton bHapus, JTextField iBayar, JTextField iHarga, JTextField iIdTransaksi, JTextField iJumlahBeli, JTextField iKembalian, JTextArea iKeterangan, JTextField iNamaBarang, JTextField iStok, JTextField iTotal, JButton jButton1, JButton jButton2, JButton jButton3, JComboBox<String> jComboBox1, JComboBox<String> jComboBox2, JComboBox<String> jComboBox3, JComboBox<String> jComboBox4, JComboBox<String> jComboBox5, JComboBox<String> jComboBox6, JLabel jLabel1, JLabel jLabel10, JLabel jLabel11, JLabel jLabel12, JLabel jLabel13, JLabel jLabel14, JLabel jLabel15, JLabel jLabel2, JLabel jLabel3, JLabel jLabel4, JLabel jLabel5, JLabel jLabel6, JLabel jLabel7, JLabel jLabel8, JLabel jLabel9, JPanel jPanel1, JPanel jPanel2, JScrollPane jScrollPane1, JScrollPane jScrollPane2, JScrollPane jScrollPane3, JScrollPane jScrollPane4, JSeparator jSeparator1, JSeparator jSeparator2, JSeparator jSeparator3, JSeparator jSeparator4, JTabbedPane jTabbedPane1, JComboBox<String> listDaftarBarang, JTable tDaftarTransaksi, JTable tDetailTransaksi, JTable tableDetail) throws HeadlessException {
+        
         this.daftarJualModel = daftarJualModel;
         this.daftarJualList = daftarJualList;
         this.transaksi = transaksi;
@@ -142,13 +144,11 @@ public class FrameTransaksi extends javax.swing.JFrame {
     List<TransaksiDetail> rekapTransaksiDetail;
     DefaultTableModel modelRekapTransaksi;
     DefaultTableModel modelRekapTransaksiDetail;
-    DBHelperRekapTransaksi dBHelperRekapTransaksi;
-    DBHelperRekapTransaksi dBHelperDetailTransaksi;
     final String[] rekapTransaksiColumn = new String[]{"ID Transaksi", "Tanggal", "Tagihan", "Bayar", "Kembalian", "Keterangan"};
     final Object[][] tempRekapTransaksi = new Object[0][0];
 
     private void initDataTransaksi(long start, long end) {
-        dBHelperRekapTransaksi = new DBHelperRekapTransaksi();
+        DBHelperRekapTransaksi dBHelperRekapTransaksi = new DBHelperRekapTransaksi();
         rekapTransaksi = dBHelperRekapTransaksi.selectTransaksi(start, end);
         modelRekapTransaksi = new DefaultTableModel(tempRekapTransaksi, rekapTransaksiColumn);
         modelRekapTransaksiDetail = new DefaultTableModel(tempRekapTransaksi, TransaksiDetail.namaKolom);
@@ -162,7 +162,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
     }
 
     private void initDataDetailTransaksi(int idTransaksi) {
-        dBHelperDetailTransaksi = new DBHelperRekapTransaksi();
+        DBHelperRekapTransaksi dBHelperDetailTransaksi = new DBHelperRekapTransaksi();
         rekapTransaksiDetail = dBHelperDetailTransaksi.getDetailTransaksi(idTransaksi);
         modelRekapTransaksiDetail.setRowCount(0);
 
@@ -216,8 +216,10 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     private boolean isStockAvailable(int idBarang, double jumlahBeli) {
         double stok;
+        
+        DBHelperTransaksi dbHelper = new DBHelperTransaksi();
         stok = dbHelper.getStokBarang(idBarang);
-
+        dbHelper.close();
         return stok >= jumlahBeli + getJumlahTerpilih(idBarang);
     }
 
@@ -245,6 +247,94 @@ public class FrameTransaksi extends javax.swing.JFrame {
             total += transaksiDetail.get(i).getHargaTotal();
         }
         return total;
+    }
+
+    private void tambahBeli() {
+        // {"ID Barang", "Nama Barang", "Satuan", "Harga Satuan", "Jumlah Beli", "Total"}
+        if (iJumlahBeli.getText().length() != 0 && selected.getIdBarang() != 0) {
+            double jumlahBeli = Double.parseDouble(iJumlahBeli.getText());
+            if (isStockAvailable(selected.getIdBarang(), jumlahBeli)) {
+                TransaksiDetail detail = new TransaksiDetail();
+                Vector row = new Vector();
+                double hargaTotal = (selected.getHarga() / selected.getQty()) * jumlahBeli;
+                // set Detail transaksi
+                detail.setIdBarang(selected.getIdBarang());
+                detail.setJumlah(jumlahBeli);
+                detail.setJumlahSatuan(selected.getQty());
+                detail.setHargaSatuan(selected.getHarga());
+                detail.setNamaBarang(selected.getNamaBarang());
+                detail.setSatuan(selected.getSatuan());
+                detail.setHargaTotal(hargaTotal);
+                // tambah detail
+                transaksiDetail.add(detail);
+
+                // set tabel
+                tableModel.addRow(detail.getRow());
+                tableModel.fireTableDataChanged();
+                iTotal.setText(getGrandTotal() + "");
+
+                // todo masukin ke jurnal
+                reddingInput();
+                reddingBayar();
+            } else {
+                JOptionPane.showMessageDialog(rootPane, "Stok tidak mencukupi", "Kesalahan", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void simpan() {
+        if (iBayar.getText().length() != 0 && isBayarCukup()) {
+            double bayar = Double.parseDouble(iBayar.getText());
+            DBHelperTransaksi dbHelper = new DBHelperTransaksi();
+            int idTransaksi = dbHelper.getNewID(Table.Transaksi.TABLE);
+            // inserting id
+            transaksi.setBayar(bayar);
+            transaksi.setKembalian(bayar - getGrandTotal());
+            transaksi.setTagihan(getGrandTotal());
+            transaksi.setKeterangan(iKeterangan.getText());
+            transaksi.setIdTransaksi(idTransaksi);
+            transaksi.setTanggal(System.currentTimeMillis());
+            dbHelper.insertTransaksi(transaksi);
+            for (int i = 0; i < transaksiDetail.size(); i++) {
+                transaksiDetail.get(i).setIdTransaksi(idTransaksi);
+                dbHelper.insertTrasaksiDetail(transaksiDetail.get(i));
+                dbHelper.stokKeluar(transaksiDetail.get(i).getIdBarang(), transaksiDetail.get(i).getJumlah());
+            }
+            // close db
+            dbHelper.close();
+            isiJurnal();
+            initData();
+            initDataTransaksi(-1, -1);
+            
+        } else {
+            JOptionPane.showMessageDialog(rootPane, "Pembayaran tidak mencukupi", "Peringatan", JOptionPane.ERROR_MESSAGE);
+            iBayar.requestFocus();
+        }
+    }
+
+    private void isiJurnal() {
+        double hargaTotal = getGrandTotal();
+        double hargaKulak = 0;
+        
+        DBBarang dbBarang = new DBBarang();
+        long tanggal = transaksi.getTanggal();
+        for (int i = 0; i < transaksiDetail.size(); i++) {
+            hargaKulak += dbBarang.getHargaKulakSatuan(transaksiDetail.get(i).getIdBarang())*transaksiDetail.get(i).getJumlah();
+        }
+        dbBarang.close();
+        DBKeuangan dbUang = new DBKeuangan();
+        double pendapatan = hargaTotal - hargaKulak;
+        // set persediaan
+        dbUang.setKredit(DBKeuangan.Akun.persediaan, hargaKulak, tanggal, "Pengurangan persediaan transaksi " + String.format(C.SF_TRANSAKSI, transaksi.getIdTransaksi()));
+        dbUang.tambahSaldoKredit(DBKeuangan.Akun.persediaan, hargaKulak);
+        // set kas
+        dbUang.setDebet(DBKeuangan.Akun.kas, hargaTotal, tanggal, "Kas masuk transaksi " + String.format(C.SF_TRANSAKSI, transaksi.getIdTransaksi()));
+        dbUang.tambahSaldoDebet(DBKeuangan.Akun.kas, hargaTotal);
+        // set pendapatan
+        dbUang.setKredit(DBKeuangan.Akun.pendapatan, pendapatan, tanggal, "Pendapatan transaksi " + String.format(C.SF_TRANSAKSI, transaksi.getIdTransaksi()));
+        dbUang.tambahSaldoKredit(DBKeuangan.Akun.pendapatan, pendapatan);
+
+        dbUang.close();
     }
 
     /**
@@ -656,38 +746,11 @@ public class FrameTransaksi extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    Transaksi transaksi;
+    List<TransaksiDetail> transaksiDetail;
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        // {"ID Barang", "Nama Barang", "Satuan", "Harga Satuan", "Jumlah Beli", "Total"}
-        if (iJumlahBeli.getText().length() != 0 && selected.getIdBarang() != 0) {
-            double jumlahBeli = Double.parseDouble(iJumlahBeli.getText());
-            if (isStockAvailable(selected.getIdBarang(), jumlahBeli)) {
-                TransaksiDetail detail = new TransaksiDetail();
-                Vector row = new Vector();
-                double hargaTotal = (selected.getHarga()/selected.getQty()) * jumlahBeli;
-                // set Detail transaksi
-                detail.setIdBarang(selected.getIdBarang());
-                detail.setJumlah(jumlahBeli);
-                detail.setJumlahSatuan(selected.getQty());
-                detail.setHargaSatuan(selected.getHarga());
-                detail.setNamaBarang(selected.getNamaBarang());
-                detail.setSatuan(selected.getSatuan());
-                detail.setHargaTotal(hargaTotal);
-                // tambah detail
-                transaksiDetail.add(detail);
-
-                // set tabel
-                tableModel.addRow(detail.getRow());
-                tableModel.fireTableDataChanged();
-                iTotal.setText(getGrandTotal() + "");
-
-                // todo masukin ke jurnal
-                reddingInput();
-                reddingBayar();
-            } else {
-                JOptionPane.showMessageDialog(rootPane, "Stok tidak mencukupi", "Kesalahan", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        tambahBeli();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -697,29 +760,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
-        if (iBayar.getText().length() != 0 && isBayarCukup()) {
-            double bayar = Double.parseDouble(iBayar.getText());
-            int idTransaksi = dbHelper.getNewID(Table.Transaksi.TABLE);
-            // inserting id
-            transaksi.setBayar(bayar);
-            transaksi.setKembalian(bayar - getGrandTotal());
-            transaksi.setTagihan(getGrandTotal());
-            transaksi.setKeterangan(iKeterangan.getText());
-            transaksi.setIdTransaksi(idTransaksi);
-            dbHelper.insertTransaksi(transaksi);
-            for (int i = 0; i < transaksiDetail.size(); i++) {
-                transaksiDetail.get(i).setIdTransaksi(idTransaksi);
-                dbHelper.insertTrasaksiDetail(transaksiDetail.get(i));
-                dbHelper.stokKeluar(transaksiDetail.get(i).getIdBarang(), transaksiDetail.get(i).getJumlah());
-            }
-            // close db
-            dbHelper.close();
-            initData();
-            initDataTransaksi(-1, -1);
-        } else {
-            JOptionPane.showMessageDialog(rootPane, "Pembayaran tidak mencukupi", "Peringatan", JOptionPane.ERROR_MESSAGE);
-            iBayar.requestFocus();
-        }
+        simpan();
     }//GEN-LAST:event_jButton3ActionPerformed
 
 

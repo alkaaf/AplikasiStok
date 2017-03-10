@@ -57,6 +57,7 @@ public class FrameBarang extends javax.swing.JFrame {
     ComboBoxModel<String> modelAkun;
     List<KeuanganAkun> dataAkun;
     DBKeuangan dBKeuangan;
+
     public void initAkun() {
         dBKeuangan = new DBKeuangan();
         dataAkun = dBKeuangan.getDaftarAkun(DBKeuangan.Kelompok.aset);
@@ -66,11 +67,13 @@ public class FrameBarang extends javax.swing.JFrame {
         }
         modelAkun = new DefaultComboBoxModel<>(row);
         listAkun.setModel(modelAkun);
+        dBKeuangan.close();
         setAkun();
     }
-    
+
     int idAkun;
-    private void setAkun(){
+
+    private void setAkun() {
         idAkun = dataAkun.get(listAkun.getSelectedIndex()).getIdAkun();
     }
     double selisih;
@@ -95,7 +98,7 @@ public class FrameBarang extends javax.swing.JFrame {
 
     ComboBoxModel<String> modelSatuan;
     List<Satuan> dataSatuan;
-    
+
     public void initSatuan() {
         dataSatuan = dBBarang.selectSatuan();
         Vector vectorSatuan = new Vector();
@@ -107,26 +110,38 @@ public class FrameBarang extends javax.swing.JFrame {
         setSatuan();
     }
     int idSatuan;
-    private void setSatuan(){
+
+    private void setSatuan() {
         idSatuan = dataSatuan.get(listSatuan.getSelectedIndex()).getIdSatuan();
     }
-    
+
+    BarangPembelian pembelian;
 
     private void simpan() {
         if (checkData()) {
             DBBarang dd = new DBBarang();
-            BarangPembelian dataPembelian = new BarangPembelian();
-            dataPembelian.setHargaJual(hargaJualSatuan);
-            dataPembelian.setQtyJual(qtyJual);
-            dataPembelian.setHargaKulak(hargaBeli);
-            dataPembelian.setQty(qtyBeli);
-            dataPembelian.setNamaBarang(iNamaBarang.getText());
-            dataPembelian.setTanggal(System.currentTimeMillis());
-            dataPembelian.setIdSatuan(idSatuan);
-            dataPembelian.setIdAkun(idAkun);
-            dd.insertPembelian(dataPembelian);
+            pembelian = new BarangPembelian();
+            pembelian.setHargaJual(hargaJualSatuan);
+            pembelian.setQtyJual(qtyJual);
+            pembelian.setHargaKulak(hargaBeli);
+            pembelian.setQty(qtyBeli);
+            pembelian.setNamaBarang(iNamaBarang.getText());
+            pembelian.setTanggal(iTanggal.getDate().getTime());
+            pembelian.setIdSatuan(idSatuan);
+            pembelian.setIdAkun(idAkun);
+            dd.insertPembelian(pembelian);
             dd.close();
+            isiJurnal();
+            initData();
         }
+    }
+    private void isiJurnal(){
+        DBKeuangan db = new DBKeuangan();
+        db.setKredit(idAkun, pembelian.getHargaKulak(), pembelian.getTanggal(), "Pembelian barang "+pembelian.getNamaBarang());
+        db.setDebet(DBKeuangan.Akun.persediaan, pembelian.getHargaKulak(), pembelian.getTanggal(), "Penggunaan pembelian "+pembelian.getNamaBarang());
+        db.tambahSaldoDebet(DBKeuangan.Akun.persediaan, pembelian.getHargaKulak());
+        db.tambahSaldoKredit(idAkun, pembelian.getHargaKulak());
+        db.close();
     }
 
     private boolean checkData() {
@@ -557,7 +572,7 @@ public class FrameBarang extends javax.swing.JFrame {
         // TODO add your handling code here:
         hitungHarga();
     }//GEN-LAST:event_iSatuanJualKeyReleased
-    
+
     private void listSatuanItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_listSatuanItemStateChanged
         // TODO add your handling code here:
         setSatuan();

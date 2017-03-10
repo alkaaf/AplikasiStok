@@ -47,6 +47,166 @@ public class DBKeuangan extends DBHelper {
         public static int kredit = 1;
     }
 
+    public void setDebet(int idAkun, double debet, long tanggal, String keterangan) {
+        String sql = "insert into " + Table.KeuanganJurnal.TABLE + "("
+                + Table.KeuanganJurnal.IDAKUN + ","
+                + Table.KeuanganJurnal.DEBET + ","
+                + Table.KeuanganJurnal.TANGGAL + ","
+                + Table.KeuanganJurnal.KETERANGAN + ") "
+                + "values (?,?,?,?)";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            ps.setDouble(2, debet);
+            ps.setLong(3, tanggal);
+            ps.setString(4, keterangan);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void setKredit(int idAkun, double kredit, long tanggal, String keterangan) {
+        String sql = "insert into " + Table.KeuanganJurnal.TABLE + "("
+                + Table.KeuanganJurnal.IDAKUN + ","
+                + Table.KeuanganJurnal.KREDIT + ","
+                + Table.KeuanganJurnal.TANGGAL + ","
+                + Table.KeuanganJurnal.KETERANGAN + ") "
+                + "values (?,?,?,?)";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            ps.setDouble(2, kredit);
+            ps.setLong(3, tanggal);
+            ps.setString(4, keterangan);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public double getSaldoDebet(int idAkun) {
+        ResultSet rs;
+        double saldo = -1;
+        String sql = "select " + Table.KeuanganSaldo.DEBET + " from " + Table.KeuanganSaldo.TABLE + " where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            rs = ps.executeQuery();
+            if (!rs.isClosed()) {
+                saldo = rs.getDouble(Table.KeuanganSaldo.DEBET);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return saldo;
+    }
+
+    public double getSaldoKredit(int idAkun) {
+        ResultSet rs;
+        double saldo = -1;
+        String sql = "select " + Table.KeuanganSaldo.KREDIT + " from " + Table.KeuanganSaldo.TABLE + " where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            rs = ps.executeQuery();
+            if (!rs.isClosed()) {
+                saldo = rs.getDouble(Table.KeuanganSaldo.KREDIT);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return saldo;
+    }
+
+    public void tambahSaldoDebet(int idAkun, double val) {
+        double oldSaldo = getSaldoDebet(idAkun);
+        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.DEBET + ") values (?,?)";
+        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.DEBET + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = null;
+            if (oldSaldo == -1) {
+                ps = getConnection().prepareStatement(sqlinsert);
+                ps.setInt(1, idAkun);
+                ps.setDouble(2, val + oldSaldo);
+
+            } else {
+                ps = getConnection().prepareStatement(sqlupdate);
+                ps.setDouble(1, val + oldSaldo);
+                ps.setInt(2, idAkun);
+            }
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void kurangSaldoDebet(int idAkun, double val) {
+        double oldSaldo = getSaldoDebet(idAkun);
+        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.DEBET + ") values (?,?)";
+        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.DEBET + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = null;
+            if (oldSaldo == -1) {
+                ps = getConnection().prepareStatement(sqlinsert);
+                ps.setInt(1, idAkun);
+                ps.setDouble(2, oldSaldo - val);
+
+            } else {
+                ps = getConnection().prepareStatement(sqlupdate);
+                ps.setDouble(1, oldSaldo - val);
+                ps.setInt(2, idAkun);
+            }
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void tambahSaldoKredit(int idAkun, double val) {
+        double oldSaldo = getSaldoKredit(idAkun);
+        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.KREDIT + ") values (?,?)";
+        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.KREDIT + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = null;
+            if (oldSaldo == -1) {
+                ps = getConnection().prepareStatement(sqlinsert);
+                ps.setInt(1, idAkun);
+                ps.setDouble(2, val + oldSaldo);
+
+            } else {
+                ps = getConnection().prepareStatement(sqlupdate);
+                ps.setDouble(1, val + oldSaldo);
+                ps.setInt(2, idAkun);
+            }
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void kurangSaldoKredit(int idAkun, double val) {
+        double oldSaldo = getSaldoKredit(idAkun);
+        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.KREDIT + ") values (?,?)";
+        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.KREDIT + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+        try {
+            PreparedStatement ps = null;
+            if (oldSaldo == -1) {
+                ps = getConnection().prepareStatement(sqlinsert);
+                ps.setInt(1, idAkun);
+                ps.setDouble(2, oldSaldo - val);
+
+            } else {
+                ps = getConnection().prepareStatement(sqlupdate);
+                ps.setDouble(1, oldSaldo - val);
+                ps.setInt(2, idAkun);
+            }
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public List<KeuanganAkun> getDaftarAkun() {
         List<KeuanganAkun> temp = new ArrayList<>();
         String sql = "select kelompok." + Table.KeuanganKelompok.NAMA_KELOMPOK + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", akun." + Table.KeuanganAkun.IDAKUN + ", coalesce(saldo." + Table.KeuanganSaldo.DEBET + ",0.0), coalesce(saldo." + Table.KeuanganSaldo.KREDIT + ",0.0) "
@@ -79,11 +239,11 @@ public class DBKeuangan extends DBHelper {
 
     public List<KeuanganAkun> getDaftarAkun(int idKelompok) {
         List<KeuanganAkun> temp = new ArrayList<>();
-        String sql = "select kelompok."+Table.KeuanganKelompok.JENIS+", kelompok." + Table.KeuanganKelompok.NAMA_KELOMPOK + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", akun." + Table.KeuanganAkun.IDAKUN + ", coalesce(saldo." + Table.KeuanganSaldo.DEBET + ",0.0) "+Table.KeuanganSaldo.DEBET+", coalesce(saldo." + Table.KeuanganSaldo.KREDIT + ",0.0) " + Table.KeuanganSaldo.KREDIT + " "
+        String sql = "select kelompok." + Table.KeuanganKelompok.JENIS + ", kelompok." + Table.KeuanganKelompok.NAMA_KELOMPOK + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", akun." + Table.KeuanganAkun.IDAKUN + ", coalesce(saldo." + Table.KeuanganSaldo.DEBET + ",0.0) " + Table.KeuanganSaldo.DEBET + ", coalesce(saldo." + Table.KeuanganSaldo.KREDIT + ",0.0) " + Table.KeuanganSaldo.KREDIT + " "
                 + "from " + Table.KeuanganAkun.TABLE + " akun "
                 + "LEFT JOIN " + Table.KeuanganSaldo.TABLE + " saldo on akun." + Table.KeuanganAkun.IDAKUN + " = saldo." + Table.KeuanganSaldo.IDAKUN + " "
                 + "join " + Table.KeuanganKelompok.TABLE + " kelompok on akun." + Table.KeuanganAkun.IDKELOMPOK + "=kelompok." + Table.KeuanganKelompok.IDKELOMPOK + " where akun.hapus = 0 and "
-                + "kelompok."+Table.KeuanganKelompok.IDKELOMPOK + "=?";
+                + "kelompok." + Table.KeuanganKelompok.IDKELOMPOK + "=?";
         System.out.println(sql);
         ResultSet rs;
         try {
@@ -109,4 +269,12 @@ public class DBKeuangan extends DBHelper {
         }
         return temp;
     }
+
+//    public static void main(String[] args) {
+//        DBKeuangan db = new DBKeuangan();
+////        System.out.println(db.tambahSaldoDebit(1, 20) + "");
+////        db.tambahSaldoDebit(1, 20);
+////        db.kurangSaldoDebet(1, 220);
+//        db.kurangSaldoKredit(4, 20000);
+//    }
 }
