@@ -7,7 +7,6 @@ package stockie.Gui.Transaksi;
 
 import Constant.C;
 import Constant.Table;
-import com.sun.org.apache.bcel.internal.generic.ISTORE;
 import java.awt.Color;
 import java.awt.HeadlessException;
 import java.util.ArrayList;
@@ -27,9 +26,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-import org.jdatepicker.JDatePicker;
-import org.jdatepicker.impl.JDatePanelImpl;
-import org.jdatepicker.impl.JDatePickerImpl;
 import stockie.Model.DB.DBBarang;
 import stockie.Model.DB.DBHelperRekapTransaksi;
 import stockie.Model.DB.DBHelperTransaksi;

@@ -7,8 +7,6 @@ package stockie.Model.DB;
 
 import Constant.C;
 import Constant.Table;
-import com.j256.ormlite.spring.DaoFactory;
-import com.oracle.webservices.internal.api.databinding.DatabindingMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DefaultListModel;
 import stockie.Model.DaftarJual;
 import stockie.Model.Transaksi;
 import stockie.Model.TransaksiDetail;

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stockie.Model.Jurnal;
 import stockie.Model.KeuanganAkun;
 
 /**
@@ -45,6 +46,54 @@ public class DBKeuangan extends DBHelper {
 
         public static int debet = 0;
         public static int kredit = 1;
+    }
+
+    public List<Jurnal> getJurnal() {
+        List<Jurnal> temp = new ArrayList<>();
+        String sql = "SELECT jurnal." + Table.KeuanganJurnal.TANGGAL + ", jurnal." + Table.KeuanganJurnal.IDAKUN + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", jurnal." + Table.KeuanganJurnal.DEBET + ", jurnal." + Table.KeuanganJurnal.KREDIT + ", jurnal." + Table.KeuanganJurnal.KETERANGAN + " FROM " + Table.KeuanganAkun.TABLE + " akun, " + Table.KeuanganJurnal.TABLE + " jurnal where jurnal." + Table.KeuanganJurnal.IDAKUN + "=akun." + Table.KeuanganAkun.IDAKUN;
+        ResultSet rs;
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Jurnal row = new Jurnal();
+                row.setDebet(rs.getDouble(Table.KeuanganJurnal.DEBET));
+                row.setKredit(rs.getDouble(Table.KeuanganJurnal.KREDIT));
+                row.setIdAkun(rs.getInt(Table.KeuanganJurnal.IDAKUN));
+                row.setNamaAkun(rs.getString(Table.KeuanganAkun.NAMA_AKUN));
+                row.setKeterangan(rs.getString(Table.KeuanganJurnal.KETERANGAN));
+                row.setTanggal(rs.getLong(Table.KeuanganJurnal.TANGGAL));
+                temp.add(row);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return temp;
+    }
+
+    public List<Jurnal> getJurnal(long start, long end) {
+        List<Jurnal> temp = new ArrayList<>();
+        String sql = "SELECT jurnal." + Table.KeuanganJurnal.TANGGAL + ", jurnal." + Table.KeuanganJurnal.IDAKUN + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", jurnal." + Table.KeuanganJurnal.DEBET + ", jurnal." + Table.KeuanganJurnal.KREDIT + ", jurnal." + Table.KeuanganJurnal.KETERANGAN + " FROM " + Table.KeuanganAkun.TABLE + " akun, " + Table.KeuanganJurnal.TABLE + " jurnal where jurnal." + Table.KeuanganJurnal.IDAKUN + "=akun." + Table.KeuanganAkun.IDAKUN + " and "+Table.KeuanganJurnal.TANGGAL+">=? and "+Table.KeuanganJurnal.TANGGAL+"<=?";
+        ResultSet rs;
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setLong(1, start);
+            ps.setLong(2, end);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Jurnal row = new Jurnal();
+                row.setDebet(rs.getDouble(Table.KeuanganJurnal.DEBET));
+                row.setKredit(rs.getDouble(Table.KeuanganJurnal.KREDIT));
+                row.setIdAkun(rs.getInt(Table.KeuanganJurnal.IDAKUN));
+                row.setNamaAkun(rs.getString(Table.KeuanganAkun.NAMA_AKUN));
+                row.setKeterangan(rs.getString(Table.KeuanganJurnal.KETERANGAN));
+                row.setTanggal(rs.getLong(Table.KeuanganJurnal.TANGGAL));
+                temp.add(row);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return temp;
     }
 
     public void setDebet(int idAkun, double debet, long tanggal, String keterangan) {

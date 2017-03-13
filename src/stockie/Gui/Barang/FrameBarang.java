@@ -145,7 +145,10 @@ public class FrameBarang extends javax.swing.JFrame {
     }
 
     private boolean checkData() {
-
+        if(dataAkun.get(listAkun.getSelectedIndex()).getSaldo() < hargaBeli){
+            JOptionPane.showMessageDialog(rootPane, "Saldo akun \""+dataAkun.get(idAkun).getNamaAkun()+"\" tidak mencukupi");
+            return false;
+        }
         if (iNamaBarang.getText().length() <= 0) {
             JOptionPane.showMessageDialog(rootPane, "Nama barang belum diisi");
             return false;
