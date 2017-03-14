@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import stockie.Gui.Barang.FrameBarang;
 import stockie.Gui.Keuangan.FrameLapKeuangan;
 import stockie.Gui.Keuangan.FrameSuntikModal;
+import stockie.Gui.Keuangan.FrameTambahBiaya;
 import stockie.Gui.Transaksi.FrameTransaksi;
 
 /**
@@ -40,6 +41,7 @@ public class FrameMain extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem9 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         jMenuItem4 = new javax.swing.JMenuItem();
 
@@ -79,6 +81,14 @@ public class FrameMain extends javax.swing.JFrame {
             }
         });
         jMenu3.add(jMenuItem9);
+
+        jMenuItem3.setText("Biaya");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem3);
         jMenu3.add(jSeparator3);
 
         jMenuItem4.setText("Laporan keuangan");
@@ -128,6 +138,12 @@ public class FrameMain extends javax.swing.JFrame {
         frame.setVisible(true);
     }//GEN-LAST:event_jMenuItem9ActionPerformed
 
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        // TODO add your handling code here:
+        JFrame frame  = new FrameTambahBiaya();
+        frame.setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -170,6 +186,7 @@ public class FrameMain extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPopupMenu.Separator jSeparator3;

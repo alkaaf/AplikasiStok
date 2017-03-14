@@ -21,7 +21,18 @@ import stockie.Model.Satuan;
  * @author dalbo
  */
 public class DBBarang extends DBHelper {
-
+    public void updateBarang(int idBarang, double hargaBaru){
+        String sql = "update "+Table.BarangHarga.TABLE+" set "+Table.BarangHarga.HARGA+"=? where "+Table.BarangHarga.IDBARANG+"=?";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setDouble(1, hargaBaru);
+            ps.setInt(2, idBarang);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
     public void insertPembelian(BarangPembelian barang) {
         int newId = getNewID(Table.DataBarang.TABLE);
         insertBarang(newId, barang.getNamaBarang(), barang.getIdSatuan());

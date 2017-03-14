@@ -16,12 +16,12 @@ import stockie.Model.KeuanganAkun;
  *
  * @author dalbo
  */
-public class FrameSuntikModal extends javax.swing.JFrame {
+public class FrameTambahBiaya extends javax.swing.JFrame {
 
     /**
      * Creates new form FrameSuntikModal
      */
-    public FrameSuntikModal() {
+    public FrameTambahBiaya() {
         initComponents();
         initData();
     }
@@ -37,7 +37,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
 
     public void initDaftarAkun() {
         DBKeuangan db = new DBKeuangan();
-        dataAkun = db.getDaftarAkun(DBKeuangan.Kelompok.aset);
+        dataAkun = db.getDaftarAkun(DBKeuangan.Kelompok.biaya);
         Vector vector = new Vector();
         for (int i = 0; i < dataAkun.size(); i++) {
             vector.add(dataAkun.get(i).toString());
@@ -53,16 +53,15 @@ public class FrameSuntikModal extends javax.swing.JFrame {
     }
 
     public void simpan() {
-
-        if (selectedAkun != 0 && iModal.getText().length() > 0 && iTanggal.getDate() != null) {
+        if (selectedAkun != 0 && iBiaya.getText().length() > 0 && iTanggal.getDate() != null) {
             DBKeuangan db = new DBKeuangan();
-            double nominal = Double.parseDouble(iModal.getText());
+            double nominal = Double.parseDouble(iBiaya.getText());
             String keterangan = iKeterangan.getText();
             long tanggal = iTanggal.getDate().getTime();
-            db.setDebet(DBKeuangan.Akun.kas, nominal, tanggal, keterangan);
-            db.setKredit(DBKeuangan.Akun.modal, nominal, tanggal, keterangan);
-            db.tambahSaldoDebet(DBKeuangan.Akun.kas, nominal);
-            db.tambahSaldoKredit(DBKeuangan.Akun.modal, nominal);
+            db.setDebet(selectedAkun, nominal, tanggal, keterangan);
+            db.setKredit(DBKeuangan.Akun.kas, nominal, tanggal, keterangan);
+            db.tambahSaldoDebet(selectedAkun, nominal);
+            db.tambahSaldoKredit(DBKeuangan.Akun.kas, nominal);
             db.close();
             initData();
         } else {
@@ -74,7 +73,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
     private void clearAll(){
         String c = "";
         iKeterangan.setText(c);
-        iModal.setText(c);
+        iBiaya.setText(c);
         iKeterangan.setText(c);
         listAkun.setSelectedIndex(0);
     }
@@ -91,7 +90,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        iModal = new javax.swing.JTextField();
+        iBiaya = new javax.swing.JTextField();
         listAkun = new javax.swing.JComboBox<>();
         iTanggal = new org.jdesktop.swingx.JXDatePicker();
         jLabel4 = new javax.swing.JLabel();
@@ -101,9 +100,9 @@ public class FrameSuntikModal extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setText("Jumlah Modal");
+        jLabel1.setText("Jumlah Biaya");
 
-        jLabel2.setText("Tujuan Akun");
+        jLabel2.setText("Akun Biaya");
 
         jLabel3.setText("Tanggal");
 
@@ -138,7 +137,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(18, 18, 18)
-                        .addComponent(iModal))
+                        .addComponent(iBiaya))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
@@ -146,7 +145,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
                             .addComponent(jLabel4))
                         .addGap(22, 22, 22)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                             .addComponent(iTanggal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(listAkun, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
@@ -157,7 +156,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(iModal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iBiaya, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -204,27 +203,28 @@ public class FrameSuntikModal extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FrameSuntikModal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FrameTambahBiaya.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FrameSuntikModal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FrameTambahBiaya.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FrameSuntikModal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FrameTambahBiaya.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FrameSuntikModal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FrameTambahBiaya.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameSuntikModal().setVisible(true);
+                new FrameTambahBiaya().setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField iBiaya;
     private javax.swing.JTextArea iKeterangan;
-    private javax.swing.JTextField iModal;
     private javax.swing.JButton iSimpan;
     private org.jdesktop.swingx.JXDatePicker iTanggal;
     private javax.swing.JLabel jLabel1;

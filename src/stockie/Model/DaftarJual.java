@@ -5,6 +5,8 @@
  */
 package stockie.Model;
 
+import java.util.Vector;
+
 /**
  *
  * @author dalbo
@@ -86,5 +88,13 @@ public class DaftarJual {
         } else {
             return String.format("[ID%d] %s", idBarang, namaBarang);
         }
+    }
+
+    public Vector getRow() {
+         Vector v = new Vector();
+         v.add(String.format("[ID%d]", idBarang));
+         v.add(namaBarang);
+         v.add(harga);
+         return v;
     }
 }
