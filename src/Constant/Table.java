@@ -106,6 +106,7 @@ public class Table {
         public static String KREDIT = "kredit";
         public static String KETERANGAN = "keterangan";
         public static String SALDO = "saldo";
+        public static String ID = "id";
     }
 
     public static class KeuanganKelompok {

@@ -5,11 +5,16 @@
  */
 package stockie.Gui.Keuangan;
 
+import java.util.Date;
 import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.ListModel;
 import javax.swing.table.DefaultTableModel;
+import org.jdesktop.swingx.combobox.ListComboBoxModel;
 import org.sqlite.core.DB;
 import stockie.Model.DB.DBKeuangan;
 import stockie.Model.Jurnal;
+import stockie.Model.KeuanganAkun;
 
 /**
  *
@@ -27,7 +32,44 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
 
     public void initData() {
         initTableJurnal();
-//        initAkunBukuBesar();
+        initAkunBukuBesar();
+    }
+
+    DefaultListModel<String> modelListAkun;
+    List<KeuanganAkun> dataAkun;
+
+    public void initAkunBukuBesar() {
+        DBKeuangan db = new DBKeuangan();
+        modelListAkun = new DefaultListModel<>();
+        dataAkun = db.getDaftarAkun();
+        for (int i = 0; i < dataAkun.size(); i++) {
+            modelListAkun.addElement(dataAkun.get(i).getNamaAkun());
+        }
+        listAkun.setModel(modelListAkun);
+        db.close();
+    }
+
+    int selectedBukuBesarAkun = 0;
+    List<Jurnal> dataBukuBesar;
+    DefaultTableModel modelBukuBesar;
+
+    public void initBukuBesar() {
+        if (selectedBukuBesarAkun > 0) {
+            DBKeuangan db = new DBKeuangan();
+            modelBukuBesar = new DefaultTableModel(new Object[0][0], Jurnal.columnNameSaldo);
+            if (bukuStart.getDate() != null && bukuStart.getDate() != null) {
+                dataBukuBesar = db.getBukuBesar(selectedBukuBesarAkun, bukuStart.getDate().getTime(), bukuEnd.getDate().getTime());
+            } else {
+                dataBukuBesar = db.getBukuBesar(selectedBukuBesarAkun);
+            }
+
+            for (int i = 0; i < dataBukuBesar.size(); i++) {
+                modelBukuBesar.addRow(dataBukuBesar.get(i).getRowSaldo());
+            }
+            tBuku.setModel(modelBukuBesar);
+            modelBukuBesar.fireTableDataChanged();
+            db.close();
+        }
     }
 
     DefaultTableModel modelJurnal;
@@ -46,6 +88,7 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         modelJurnal.fireTableDataChanged();
         db.close();
     }
+
     public void initTableJurnal(long start, long end) {
         DBKeuangan db = new DBKeuangan();
         Object[][] obj = new Object[0][0];
@@ -62,6 +105,10 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
 
     public void setKeterangan(int index) {
         iKeterangan.setText(dataJurnal.get(index).getKeterangan());
+    }
+
+    public void setBukuBesarKeterangan(int index) {
+        iKetBukuBesar.setText(dataBukuBesar.get(index).getKeterangan());
     }
 
     /**
@@ -86,21 +133,21 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         iKeterangan = new javax.swing.JTextArea();
         jButton2 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        tAkun = new javax.swing.JTable();
         jScrollPane4 = new javax.swing.JScrollPane();
         tBuku = new javax.swing.JTable();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
-        jXDatePicker1 = new org.jdesktop.swingx.JXDatePicker();
+        bukuEnd = new org.jdesktop.swingx.JXDatePicker();
         jLabel5 = new javax.swing.JLabel();
-        jXDatePicker2 = new org.jdesktop.swingx.JXDatePicker();
+        bukuStart = new org.jdesktop.swingx.JXDatePicker();
         jLabel6 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        listAkun = new javax.swing.JList<>();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        iKetBukuBesar = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Periode");
 
@@ -192,30 +239,27 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Jurnal Keuangan", jPanel1);
 
-        tAkun.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane3.setViewportView(tAkun);
-
         tBuku.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
+        tBuku.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tBukuMouseClicked(evt);
+            }
+        });
+        tBuku.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tBukuKeyReleased(evt);
+            }
+        });
         jScrollPane4.setViewportView(tBuku);
 
         jLabel3.setText("Pilih akun");
@@ -223,10 +267,37 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         jLabel4.setText("Buku besar");
 
         jButton3.setText("Set");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jLabel5.setText("-");
 
         jLabel6.setText("Periode");
+
+        listAkun.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        listAkun.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                listAkunMouseClicked(evt);
+            }
+        });
+        listAkun.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                listAkunKeyReleased(evt);
+            }
+        });
+        jScrollPane5.setViewportView(listAkun);
+
+        iKetBukuBesar.setEditable(false);
+        iKetBukuBesar.setColumns(20);
+        iKetBukuBesar.setRows(5);
+        jScrollPane3.setViewportView(iKetBukuBesar);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -235,8 +306,8 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel3)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
@@ -244,14 +315,15 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jXDatePicker2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(bukuStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jXDatePicker1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(bukuEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3))
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -262,46 +334,21 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jLabel4)
                     .addComponent(jButton3)
-                    .addComponent(jXDatePicker1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bukuEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5)
-                    .addComponent(jXDatePicker2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bukuStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane3)))
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Buku Besar", jPanel2);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 674, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 455, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("Saldo", jPanel3);
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 674, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 455, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("Laba-Rugi", jPanel4);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -317,12 +364,49 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void tJurnalMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tJurnalMouseClicked
+    private void listAkunKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listAkunKeyReleased
         // TODO add your handling code here:
-        if (tJurnal.getSelectedRow() > -1) {
-            setKeterangan(tJurnal.getSelectedRow());
+        selectedBukuBesarAkun = dataAkun.get(listAkun.getSelectedIndex()).getIdAkun();
+        initBukuBesar();
+    }//GEN-LAST:event_listAkunKeyReleased
+
+    private void listAkunMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listAkunMouseClicked
+        // TODO add your handling code here:
+        selectedBukuBesarAkun = dataAkun.get(listAkun.getSelectedIndex()).getIdAkun();
+        initBukuBesar();
+    }//GEN-LAST:event_listAkunMouseClicked
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        selectedBukuBesarAkun = dataAkun.get(listAkun.getSelectedIndex()).getIdAkun();
+        initBukuBesar();
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void tBukuKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tBukuKeyReleased
+        // TODO add your handling code here:
+        if (tBuku.getSelectedRow() >= 0) {
+            setBukuBesarKeterangan(tBuku.getSelectedRow());
         }
-    }//GEN-LAST:event_tJurnalMouseClicked
+    }//GEN-LAST:event_tBukuKeyReleased
+
+    private void tBukuMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tBukuMouseClicked
+        // TODO add your handling code here:
+        if (tBuku.getSelectedRow() >= 0) {
+            setBukuBesarKeterangan(tBuku.getSelectedRow());
+        }
+    }//GEN-LAST:event_tBukuMouseClicked
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        initData();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        if (dateStart.getDate() != null && dateEnd.getDate() != null) {
+            initTableJurnal(dateStart.getDate().getTime(), dateEnd.getDate().getTime());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void tJurnalKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tJurnalKeyReleased
         // TODO add your handling code here:
@@ -331,17 +415,12 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_tJurnalKeyReleased
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void tJurnalMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tJurnalMouseClicked
         // TODO add your handling code here:
-        if(dateStart.getDate() != null && dateEnd.getDate()!= null){
-            initTableJurnal(dateStart.getDate().getTime(), dateEnd.getDate().getTime());
+        if (tJurnal.getSelectedRow() > -1) {
+            setKeterangan(tJurnal.getSelectedRow());
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        initData();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_tJurnalMouseClicked
 
     /**
      * @param args the command line arguments
@@ -379,8 +458,11 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.jdesktop.swingx.JXDatePicker bukuEnd;
+    private org.jdesktop.swingx.JXDatePicker bukuStart;
     private org.jdesktop.swingx.JXDatePicker dateEnd;
     private org.jdesktop.swingx.JXDatePicker dateStart;
+    private javax.swing.JTextArea iKetBukuBesar;
     private javax.swing.JTextArea iKeterangan;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -393,16 +475,13 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private org.jdesktop.swingx.JXDatePicker jXDatePicker1;
-    private org.jdesktop.swingx.JXDatePicker jXDatePicker2;
-    private javax.swing.JTable tAkun;
+    private javax.swing.JList<String> listAkun;
     private javax.swing.JTable tBuku;
     private javax.swing.JTable tJurnal;
     // End of variables declaration//GEN-END:variables

@@ -20,12 +20,23 @@ public class Jurnal {
     String namaAkun;
     double debet;
     double kredit;
+    double saldo;
     long tanggal;
     String keterangan;
     public static final String[] columnName = new String[]{"Tanggal", "Akun", "Debet", "Kredit"};
+    public static final String[] columnNameSaldo = new String[]{"Tanggal", "Akun", "Debet", "Kredit", "Saldo"};
 
     public Jurnal() {
     }
+
+    public double getSaldo() {
+        return saldo;
+    }
+
+    public void setSaldo(double saldo) {
+        this.saldo = saldo;
+    }
+    
 
     public int getIdAkun() {
         return idAkun;
@@ -84,4 +95,14 @@ public class Jurnal {
         return v;
     }
 
+    public Vector getRowSaldo()
+    {
+        Vector v = new Vector();
+        v.add(new SimpleDateFormat(C.DATE_FORMAT).format(new Date(tanggal)));
+        v.add(namaAkun);
+        v.add(debet);
+        v.add(kredit);
+        v.add(saldo);
+        return v;
+    }
 }
