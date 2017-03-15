@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,7 +74,7 @@ public class DBKeuangan extends DBHelper {
 
     public List<Jurnal> getJurnal(long start, long end) {
         List<Jurnal> temp = new ArrayList<>();
-        String sql = "SELECT jurnal." + Table.KeuanganJurnal.TANGGAL + ", jurnal." + Table.KeuanganJurnal.IDAKUN + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", jurnal." + Table.KeuanganJurnal.DEBET + ", jurnal." + Table.KeuanganJurnal.KREDIT + ", jurnal." + Table.KeuanganJurnal.KETERANGAN + " FROM " + Table.KeuanganAkun.TABLE + " akun, " + Table.KeuanganJurnal.TABLE + " jurnal where jurnal." + Table.KeuanganJurnal.IDAKUN + "=akun." + Table.KeuanganAkun.IDAKUN + " and "+Table.KeuanganJurnal.TANGGAL+">=? and "+Table.KeuanganJurnal.TANGGAL+"<=?";
+        String sql = "SELECT jurnal." + Table.KeuanganJurnal.TANGGAL + ", jurnal." + Table.KeuanganJurnal.IDAKUN + ", akun." + Table.KeuanganAkun.NAMA_AKUN + ", jurnal." + Table.KeuanganJurnal.DEBET + ", jurnal." + Table.KeuanganJurnal.KREDIT + ", jurnal." + Table.KeuanganJurnal.KETERANGAN + " FROM " + Table.KeuanganAkun.TABLE + " akun, " + Table.KeuanganJurnal.TABLE + " jurnal where jurnal." + Table.KeuanganJurnal.IDAKUN + "=akun." + Table.KeuanganAkun.IDAKUN + " and " + Table.KeuanganJurnal.TANGGAL + ">=? and " + Table.KeuanganJurnal.TANGGAL + "<=?";
         ResultSet rs;
         try {
             PreparedStatement ps = getConnection().prepareStatement(sql);
@@ -97,18 +98,34 @@ public class DBKeuangan extends DBHelper {
     }
 
     public void setDebet(int idAkun, double debet, long tanggal, String keterangan) {
+//        HashMap<String, Object> jenisSaldo = getLastSaldoAndJenis(idAkun);
+//        double saldo = 0;
+//        if ((int) jenisSaldo.get(AKUN_JENIS) == Jenis.debet) {
+//            saldo = (double) jenisSaldo.get(AKUN_SALDO) + debet;
+//        } else {
+//            saldo = (double) jenisSaldo.get(AKUN_SALDO) - debet;
+//        }
+        double saldo  = getLastSaldo(idAkun);
+        int jenis = getJenis(idAkun);
+        if(jenis == DBKeuangan.Jenis.debet){
+            saldo += debet;
+        } else {
+            saldo -= debet;
+        }
         String sql = "insert into " + Table.KeuanganJurnal.TABLE + "("
                 + Table.KeuanganJurnal.IDAKUN + ","
                 + Table.KeuanganJurnal.DEBET + ","
                 + Table.KeuanganJurnal.TANGGAL + ","
-                + Table.KeuanganJurnal.KETERANGAN + ") "
-                + "values (?,?,?,?)";
+                + Table.KeuanganJurnal.KETERANGAN + ","
+                + Table.KeuanganJurnal.SALDO+") "
+                + "values (?,?,?,?,?)";
         try {
             PreparedStatement ps = getConnection().prepareStatement(sql);
             ps.setInt(1, idAkun);
             ps.setDouble(2, debet);
             ps.setLong(3, tanggal);
             ps.setString(4, keterangan);
+            ps.setDouble(5, saldo);
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
@@ -116,22 +133,90 @@ public class DBKeuangan extends DBHelper {
     }
 
     public void setKredit(int idAkun, double kredit, long tanggal, String keterangan) {
+        double saldo  = getLastSaldo(idAkun);
+        int jenis = getJenis(idAkun);
+        if(jenis == DBKeuangan.Jenis.kredit){
+            saldo += kredit;
+        } else {
+            saldo -= kredit;
+        }
         String sql = "insert into " + Table.KeuanganJurnal.TABLE + "("
                 + Table.KeuanganJurnal.IDAKUN + ","
                 + Table.KeuanganJurnal.KREDIT + ","
                 + Table.KeuanganJurnal.TANGGAL + ","
-                + Table.KeuanganJurnal.KETERANGAN + ") "
-                + "values (?,?,?,?)";
+                + Table.KeuanganJurnal.KETERANGAN + ","
+                + Table.KeuanganJurnal.SALDO+") "
+                + "values (?,?,?,?,?)";
         try {
             PreparedStatement ps = getConnection().prepareStatement(sql);
             ps.setInt(1, idAkun);
             ps.setDouble(2, kredit);
             ps.setLong(3, tanggal);
             ps.setString(4, keterangan);
+            ps.setDouble(5, saldo);
             ps.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    final String AKUN_SALDO = "saldo";
+    final String AKUN_JENIS = "jenis";
+
+    public double getLastSaldo(int idAkun) {
+//        HashMap<String, Object> saldoJenis = new HashMap<>();
+//        saldoJenis.put(AKUN_JENIS, -1);
+//        saldoJenis.put(AKUN_SALDO, 0);
+        double saldo = 0;
+        ResultSet rs;
+        String sql = "SELECT"
+                + "	jurnal.idakun,"
+                + "	debet,"
+                + "	kredit,"
+                + "	jurnal.saldo,"
+                + "	kelompok.jenis"
+                + "FROM"
+                + "	keuangan_jurnal jurnal,"
+                + "	keuangan_kelompok kelompok,"
+                + "	keuangan_akun akun"
+                + "WHERE"
+                + "	akun.idakun = jurnal.idakun"
+                + "AND akun.idkelompok = kelompok.idkelompok"
+                + "AND jurnal.idakun =?"
+                + "ORDER BY"
+                + "	tanggal DESC limit 1";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            rs = ps.executeQuery();
+            if (!rs.isClosed()) {
+                saldo = rs.getDouble(Table.KeuanganJurnal.SALDO);
+            }
+
+//            saldoJenis.put(AKUN_JENIS, rs.getInt(Table.KeuanganKelompok.JENIS));
+//            saldoJenis.put(AKUN_SALDO, rs.getDouble(Table.KeuanganJurnal.SALDO));
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return saldo;
+    }
+
+    public int getJenis(int idAkun) {
+        String sql = "select jenis from keuangan_akun akun, keuangan_kelompok k where k.idkelompok=akun.idkelompok and akun.idakun=?";
+        PreparedStatement ps;
+        ResultSet rs;
+        int jenis = -1;
+        try {
+            ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idAkun);
+            rs = ps.executeQuery();
+            if (!rs.isClosed()) {
+                jenis = rs.getInt(Table.KeuanganKelompok.JENIS);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return jenis;
     }
 
     public double getSaldoDebet(int idAkun) {
@@ -190,28 +275,28 @@ public class DBKeuangan extends DBHelper {
         }
     }
 
-    public void kurangSaldoDebet(int idAkun, double val) {
-        double oldSaldo = getSaldoDebet(idAkun);
-        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.DEBET + ") values (?,?)";
-        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.DEBET + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
-        try {
-            PreparedStatement ps = null;
-            if (oldSaldo == -1) {
-                ps = getConnection().prepareStatement(sqlinsert);
-                ps.setInt(1, idAkun);
-                ps.setDouble(2, oldSaldo - val);
-
-            } else {
-                ps = getConnection().prepareStatement(sqlupdate);
-                ps.setDouble(1, oldSaldo - val);
-                ps.setInt(2, idAkun);
-            }
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
+//    public void kurangSaldoDebet(int idAkun, double val) {
+//        double oldSaldo = getSaldoDebet(idAkun);
+//        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.DEBET + ") values (?,?)";
+//        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.DEBET + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+//        try {
+//            PreparedStatement ps = null;
+//            if (oldSaldo == -1) {
+//                ps = getConnection().prepareStatement(sqlinsert);
+//                ps.setInt(1, idAkun);
+//                ps.setDouble(2, oldSaldo - val);
+//
+//            } else {
+//                ps = getConnection().prepareStatement(sqlupdate);
+//                ps.setDouble(1, oldSaldo - val);
+//                ps.setInt(2, idAkun);
+//            }
+//            ps.executeUpdate();
+//        } catch (SQLException ex) {
+//            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
+//
     public void tambahSaldoKredit(int idAkun, double val) {
         double oldSaldo = getSaldoKredit(idAkun);
         String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.KREDIT + ") values (?,?)";
@@ -233,28 +318,27 @@ public class DBKeuangan extends DBHelper {
             Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    public void kurangSaldoKredit(int idAkun, double val) {
-        double oldSaldo = getSaldoKredit(idAkun);
-        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.KREDIT + ") values (?,?)";
-        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.KREDIT + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
-        try {
-            PreparedStatement ps = null;
-            if (oldSaldo == -1) {
-                ps = getConnection().prepareStatement(sqlinsert);
-                ps.setInt(1, idAkun);
-                ps.setDouble(2, oldSaldo - val);
-
-            } else {
-                ps = getConnection().prepareStatement(sqlupdate);
-                ps.setDouble(1, oldSaldo - val);
-                ps.setInt(2, idAkun);
-            }
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//    public void kurangSaldoKredit(int idAkun, double val) {
+//        double oldSaldo = getSaldoKredit(idAkun);
+//        String sqlinsert = "insert into " + Table.KeuanganSaldo.TABLE + "(" + Table.KeuanganSaldo.IDAKUN + "," + Table.KeuanganSaldo.KREDIT + ") values (?,?)";
+//        String sqlupdate = "update " + Table.KeuanganSaldo.TABLE + " set " + Table.KeuanganSaldo.KREDIT + "=? where " + Table.KeuanganSaldo.IDAKUN + "=?";
+//        try {
+//            PreparedStatement ps = null;
+//            if (oldSaldo == -1) {
+//                ps = getConnection().prepareStatement(sqlinsert);
+//                ps.setInt(1, idAkun);
+//                ps.setDouble(2, oldSaldo - val);
+//
+//            } else {
+//                ps = getConnection().prepareStatement(sqlupdate);
+//                ps.setDouble(1, oldSaldo - val);
+//                ps.setInt(2, idAkun);
+//            }
+//            ps.executeUpdate();
+//        } catch (SQLException ex) {
+//            Logger.getLogger(DBKeuangan.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
 
     public List<KeuanganAkun> getDaftarAkun() {
         List<KeuanganAkun> temp = new ArrayList<>();
