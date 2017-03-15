@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.Tab;
 import stockie.Model.BarangPembelian;
+import stockie.Model.Retur;
 import stockie.Model.Satuan;
 
 /**
@@ -21,8 +23,9 @@ import stockie.Model.Satuan;
  * @author dalbo
  */
 public class DBBarang extends DBHelper {
-    public void updateBarang(int idBarang, double hargaBaru){
-        String sql = "update "+Table.BarangHarga.TABLE+" set "+Table.BarangHarga.HARGA+"=? where "+Table.BarangHarga.IDBARANG+"=?";
+
+    public void updateBarang(int idBarang, double hargaBaru) {
+        String sql = "update " + Table.BarangHarga.TABLE + " set " + Table.BarangHarga.HARGA + "=? where " + Table.BarangHarga.IDBARANG + "=?";
         try {
             PreparedStatement ps = getConnection().prepareStatement(sql);
             ps.setDouble(1, hargaBaru);
@@ -31,8 +34,52 @@ public class DBBarang extends DBHelper {
         } catch (SQLException ex) {
             Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
+
+    public void insertRetur(int idBarang, double qty, long tanggal, String keterangan, double biaya) {
+        String sql = "insert into " + Table.Retur.TABLE + "("
+                + Table.Retur.idbarang + ", "
+                + Table.Retur.biaya + ","
+                + Table.Retur.jumlah + ","
+                + Table.Retur.tanggal + ","
+                + Table.Retur.keterangan + ") "
+                + "values (?,?,?,?,?)";
+        try {
+            PreparedStatement ps = getConnection().prepareStatement(sql);
+            ps.setInt(1, idBarang);
+            ps.setDouble(2, biaya);
+            ps.setDouble(3, qty);
+            ps.setLong(4, tanggal);
+            ps.setString(5, keterangan);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public List<Retur> selectRetur(){
+        String sql = "select "+Table.Retur.idretur+", retur."+Table.Retur.idbarang+", "+Table.Retur.tanggal+", "+Table.DataBarang.NAMA_BARANG+", "+Table.Retur.jumlah+", "+Table.Retur.biaya+", "+Table.Retur.keterangan+" from "+Table.Retur.TABLE+", "+Table.DataBarang.TABLE+" where retur.idbarang=data_barang.idbarang"; 
+        List<Retur> temp = new ArrayList<>();
+        try {
+            ResultSet rs = getConnection().createStatement().executeQuery(sql);
+            while(rs.next()){
+                Retur retur = new Retur();
+                retur.setIdBarang(rs.getInt(Table.Retur.idbarang));
+                retur.setIdRetur(rs.getInt(Table.Retur.idretur));
+                retur.setNamaBarang(rs.getString(Table.DataBarang.NAMA_BARANG));
+                retur.setBiaya(rs.getDouble(Table.Retur.biaya));
+                retur.setQty(rs.getDouble(Table.Retur.jumlah));
+                retur.setKeterangan(rs.getString(Table.Retur.keterangan));
+                retur.setTanggal(rs.getLong(Table.Retur.tanggal));
+                temp.add(retur);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBBarang.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return temp;
+    }
+
     public void insertPembelian(BarangPembelian barang) {
         int newId = getNewID(Table.DataBarang.TABLE);
         insertBarang(newId, barang.getNamaBarang(), barang.getIdSatuan());

@@ -79,7 +79,13 @@ public class Table {
     }
 
     public static class Retur {
-
+        public static String idretur = "idretur";
+        public static String tanggal= "tanggal";
+        public static String biaya = "biaya";
+        public static String idbarang = "idbarang";
+        public static String jumlah = "jumlah";
+        public static String keterangan = "keterangan";
+        public static String TABLE = "retur";
     }
 
     public static class ReturDetail {

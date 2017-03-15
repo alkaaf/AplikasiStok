@@ -89,6 +89,9 @@ public class DaftarJual {
             return String.format("[ID%d] %s", idBarang, namaBarang);
         }
     }
+    public String toStringStok(){
+        return String.format("[ID%d] (%.1f) %s", idBarang, stok, namaBarang);
+    }
 
     public Vector getRow() {
          Vector v = new Vector();

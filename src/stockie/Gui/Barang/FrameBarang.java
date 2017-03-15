@@ -5,6 +5,9 @@
  */
 package stockie.Gui.Barang;
 
+import Constant.C;
+import java.awt.Color;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
@@ -19,6 +22,7 @@ import stockie.Model.DB.DBHelperTransaksi;
 import stockie.Model.DB.DBKeuangan;
 import stockie.Model.DaftarJual;
 import stockie.Model.KeuanganAkun;
+import stockie.Model.Retur;
 import stockie.Model.Satuan;
 
 /**
@@ -43,7 +47,128 @@ public class FrameBarang extends javax.swing.JFrame {
         initAkun();
         initSatuan();
         initAturHarga();
+        initRetur();
     }
+
+    public void initRetur() {
+        initHistoriRetur();
+        initBarangRetur();
+    }
+
+    List<Retur> dataRetur;
+    DefaultTableModel modelRetur;
+    public void initHistoriRetur() {
+        modelRetur = new DefaultTableModel(new Object[0][0], Retur.columnName);
+        tRetur.setModel(modelRetur);
+        DBBarang db = new DBBarang();
+        dataRetur = db.selectRetur();
+        for (int i = 0; i < dataRetur.size(); i++) {
+            modelRetur.addRow(dataRetur.get(i).getRow());
+            
+        }
+        modelRetur.fireTableDataChanged();
+        db.close();
+    }
+    
+    List<DaftarJual> dataBarangRetur;
+    DefaultComboBoxModel<String> modelBarangRetur;
+
+    public void initBarangRetur() {
+        DBHelperTransaksi db = new DBHelperTransaksi();
+        dataBarangRetur = db.getBarangJual();
+        Vector v = new Vector();
+        for (int i = 0; i < dataBarangRetur.size(); i++) {
+            v.add(dataBarangRetur.get(i).toStringStok());
+        }
+        modelBarangRetur = new DefaultComboBoxModel<>(v);
+        listBarangRetur.setModel(modelBarangRetur);
+        db.close();
+    }
+
+    public void simpanRetur() {
+        /**
+         * Step penjurnalan
+         *
+         * 1. simpan data ke database 2. ambil harga kulak barang > kalikan
+         * dengan jumlah barang diretur 3. ketemu persediaan masukin kredit (1
+         * kredit) 4. ketemu kas masukin debet (1 debet) 5. biaya retur kurangi
+         * dari kas (2 kredit) 6. biaya retur tambahi (2 debet) 6. kurangi stok
+         * barang
+         */
+        double biayaRetur = 0;
+        double qtyRetur = 0;
+        Date tanggalRetur = null;
+        String ketRetur = "";
+        int idBarangRetur = -1;
+        double hargaKulak = 0;
+        double nominalRetur = 0;
+        // mabil biaya retur
+        if (iBiayaRetur.getText().length() > 0) {
+            biayaRetur = Double.parseDouble(iBiayaRetur.getText());
+        }
+        // ambil tanggal
+        if (iTanggalRetur.getDate() != null) {
+            tanggalRetur = iTanggalRetur.getDate();
+        } else {
+            JOptionPane.showMessageDialog(rootPane, "Tanggal belum ditentukan");
+            return;
+        }
+
+        // cek qty retur
+        if (cekQtyRetur()) {
+            qtyRetur = Double.parseDouble(iQtyRetur.getText());
+        } else {
+            JOptionPane.showMessageDialog(rootPane, "Kuantitas retur melebihi stok");
+            return;
+        }
+
+        if (listBarangRetur.getSelectedIndex() >= 0) {
+            idBarangRetur = dataBarangRetur.get(listBarangRetur.getSelectedIndex()).getIdBarang();
+        }
+        
+        if(iKeterangnaRetur.getText().length() > 0){
+            ketRetur = iKeterangnaRetur.getText();
+        }
+        // insert to retur;
+        DBBarang db = new DBBarang();
+        hargaKulak = db.getHargaKulakSatuan(idBarangRetur);
+        nominalRetur = hargaKulak * qtyRetur;
+        db.insertRetur(idBarangRetur, qtyRetur, tanggalRetur.getTime(), ketRetur, biayaRetur);
+        db.stokKeluar(idBarangRetur, qtyRetur);
+        db.close();
+
+        DBKeuangan dbk = new DBKeuangan();
+        nominalRetur = hargaKulak * qtyRetur;
+        dbk.setKredit(DBKeuangan.Akun.persediaan, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+        dbk.tambahSaldoKredit(DBKeuangan.Akun.persediaan, nominalRetur);
+        dbk.setDebet(DBKeuangan.Akun.kas, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+        dbk.tambahSaldoDebet(DBKeuangan.Akun.kas, nominalRetur);
+
+        dbk.setKredit(DBKeuangan.Akun.kas, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+        dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, biayaRetur);
+        dbk.setDebet(DBKeuangan.Akun.biayaRetur, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+        dbk.tambahSaldoDebet(DBKeuangan.Akun.biayaRetur, biayaRetur);
+        dbk.close();
+        initData();
+    }
+
+    public boolean cekQtyRetur() {
+        double stok = dataBarangRetur.get(listBarangRetur.getSelectedIndex()).getStok();
+        double qty = 0;
+        if (iQtyRetur.getText().length() > 0) {
+            qty = Double.parseDouble(iQtyRetur.getText());
+            if (qty > stok) {
+                iQtyRetur.setForeground(Color.red);
+                return false;
+            }
+        } else {
+            iQtyRetur.setForeground(Color.red);
+            return false;
+        }
+        iQtyRetur.setForeground(Color.black);
+        return true;
+    }
+
     List<DaftarJual> dataBarang;
     DefaultTableModel modelBarang;
 
@@ -255,16 +380,19 @@ public class FrameBarang extends javax.swing.JFrame {
         bBatal = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tRetur = new javax.swing.JTable();
         jLabel14 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        listBarangRetur = new javax.swing.JComboBox<>();
         jLabel15 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        iQtyRetur = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        iBiayaRetur = new javax.swing.JTextField();
+        bProsesRetur = new javax.swing.JButton();
         jLabel17 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        jLabel20 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        iKeterangnaRetur = new javax.swing.JTextArea();
+        iTanggalRetur = new org.jdesktop.swingx.JXDatePicker();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tBarang = new javax.swing.JTable();
@@ -326,20 +454,16 @@ public class FrameBarang extends javax.swing.JFrame {
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel10)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel12))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 53, Short.MAX_VALUE)
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(iHargaSatuanBeli, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
-                            .addComponent(iSelisihHarga)
-                            .addComponent(listAkun, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addComponent(jLabel13)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(iTanggal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel10)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel12)
+                    .addComponent(jLabel13))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(iTanggal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(iHargaSatuanBeli, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                    .addComponent(iSelisihHarga)
+                    .addComponent(listAkun, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -549,30 +673,52 @@ public class FrameBarang extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Pembelian", jPanel1);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tRetur.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {},
+                {},
+                {},
+                {}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(tRetur);
 
         jLabel14.setText("Barang");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        listBarangRetur.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        listBarangRetur.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                listBarangReturItemStateChanged(evt);
+            }
+        });
 
         jLabel15.setText("Kuantitas retur");
 
+        iQtyRetur.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                iQtyReturKeyReleased(evt);
+            }
+        });
+
         jLabel16.setText("Biaya retur");
 
-        jButton1.setText("Proses Retur");
+        bProsesRetur.setText("Proses Retur");
+        bProsesRetur.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bProsesReturActionPerformed(evt);
+            }
+        });
 
         jLabel17.setText("Tanggal retur");
+
+        jLabel20.setText("Keterangan");
+
+        iKeterangnaRetur.setColumns(20);
+        iKeterangnaRetur.setRows(5);
+        jScrollPane4.setViewportView(iKeterangnaRetur);
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -581,20 +727,26 @@ public class FrameBarang extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(bProsesRetur, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14)
-                            .addComponent(jLabel15)
-                            .addComponent(jLabel16)
-                            .addComponent(jLabel17))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel14)
+                                    .addComponent(jLabel15)
+                                    .addComponent(jLabel16)
+                                    .addComponent(jLabel17))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabel20)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextField1)
-                            .addComponent(jComboBox1, 0, 228, Short.MAX_VALUE)
-                            .addComponent(jTextField2)
-                            .addComponent(jTextField3))))
+                            .addComponent(iQtyRetur)
+                            .addComponent(listBarangRetur, 0, 228, Short.MAX_VALUE)
+                            .addComponent(iBiayaRetur)
+                            .addComponent(jScrollPane4)
+                            .addComponent(iTanggalRetur, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -605,22 +757,26 @@ public class FrameBarang extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel14)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(listBarangRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel15)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iQtyRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel16)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iBiayaRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(iTanggalRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
-                .addContainerGap(177, Short.MAX_VALUE))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel20))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(bProsesRetur)
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Retur", jPanel4);
@@ -673,9 +829,9 @@ public class FrameBarang extends javax.swing.JFrame {
                     .addComponent(iAturHarga, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel18, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel19, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(iAturNama, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                .addContainerGap(45, Short.MAX_VALUE))
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)
+                    .addComponent(iAturNama, javax.swing.GroupLayout.Alignment.LEADING))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -703,7 +859,7 @@ public class FrameBarang extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 640, Short.MAX_VALUE)
+            .addGap(0, 646, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -780,6 +936,21 @@ public class FrameBarang extends javax.swing.JFrame {
         ubahHarga();
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void bProsesReturActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bProsesReturActionPerformed
+        // TODO add your handling code here:
+        simpanRetur();
+    }//GEN-LAST:event_bProsesReturActionPerformed
+
+    private void listBarangReturItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_listBarangReturItemStateChanged
+        // TODO add your handling code here:
+        cekQtyRetur();
+    }//GEN-LAST:event_listBarangReturItemStateChanged
+
+    private void iQtyReturKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_iQtyReturKeyReleased
+        // TODO add your handling code here:
+        cekQtyRetur();
+    }//GEN-LAST:event_iQtyReturKeyReleased
+
     /**
      * @param args the command line arguments
      */
@@ -817,23 +988,26 @@ public class FrameBarang extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bBatal;
+    private javax.swing.JButton bProsesRetur;
     private javax.swing.JButton bSet;
     private javax.swing.JButton bSimpan;
     private org.jdesktop.swingx.JXDatePicker dateEnd;
     private org.jdesktop.swingx.JXDatePicker dateStart;
     private javax.swing.JTextField iAturHarga;
     private javax.swing.JTextField iAturNama;
+    private javax.swing.JTextField iBiayaRetur;
     private javax.swing.JTextField iHarga;
     private javax.swing.JTextField iHargaJual;
     private javax.swing.JTextField iHargaSatuanBeli;
+    private javax.swing.JTextArea iKeterangnaRetur;
     private javax.swing.JTextField iNamaBarang;
     private javax.swing.JTextField iQty;
+    private javax.swing.JTextField iQtyRetur;
     private javax.swing.JTextField iSatuanJual;
     private javax.swing.JTextField iSelisihHarga;
     private org.jdesktop.swingx.JXDatePicker iTanggal;
-    private javax.swing.JButton jButton1;
+    private org.jdesktop.swingx.JXDatePicker iTanggalRetur;
     private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -846,6 +1020,7 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -862,16 +1037,15 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
     private javax.swing.JComboBox<String> listAkun;
+    private javax.swing.JComboBox<String> listBarangRetur;
     private javax.swing.JComboBox<String> listSatuan;
     private javax.swing.JTable tBarang;
     private javax.swing.JTable tPembelian;
+    private javax.swing.JTable tRetur;
     // End of variables declaration//GEN-END:variables
 }

@@ -15,5 +15,5 @@ public class C {
     public static String SF_TRANSAKSI = "TRX%06d";
     public static String SF_BARANG = "ID%06d";
     public static String SF_BELI = "IDB%06d";
-    public static String SF_RETUR = "IDR%06d";
+    public static String SF_RETUR = "RTR%06d";
 }
