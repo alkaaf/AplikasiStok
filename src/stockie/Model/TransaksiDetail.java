@@ -99,4 +99,9 @@ public class TransaksiDetail {
         vector.add(getHargaTotal());
         return vector;
     }
+    
+    public ReturKonsumen getRetur(double jumlah){
+        ReturKonsumen k = new ReturKonsumen(idTransaksi, idBarang, jumlah, "", 0, namaBarang,0,hargaSatuan);
+        return k;
+    }
 }

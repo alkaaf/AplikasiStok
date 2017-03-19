@@ -31,6 +31,7 @@ import stockie.Model.DB.DBHelperRekapTransaksi;
 import stockie.Model.DB.DBHelperTransaksi;
 import stockie.Model.DB.DBKeuangan;
 import stockie.Model.DaftarJual;
+import stockie.Model.ReturKonsumen;
 import stockie.Model.Transaksi;
 import stockie.Model.TransaksiDetail;
 
@@ -40,7 +41,6 @@ import stockie.Model.TransaksiDetail;
  */
 public class FrameTransaksi extends javax.swing.JFrame {
 
-
     /**
      * Creates new form FrameTransaksi
      */
@@ -48,6 +48,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
         initComponents();
         initData();
         initDataTransaksi(-1, -1);
+        initReturKonsumen();
     }
 
     /**
@@ -85,7 +86,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
     }
 
     public FrameTransaksi(DefaultComboBoxModel<String> daftarJualModel, List<DaftarJual> daftarJualList, Transaksi transaksi, List<TransaksiDetail> transaksiDetail, DaftarJual selected, DefaultTableModel tableModel, JButton bHapus, JTextField iBayar, JTextField iHarga, JTextField iIdTransaksi, JTextField iJumlahBeli, JTextField iKembalian, JTextArea iKeterangan, JTextField iNamaBarang, JTextField iStok, JTextField iTotal, JButton jButton1, JButton jButton2, JButton jButton3, JComboBox<String> jComboBox1, JComboBox<String> jComboBox2, JComboBox<String> jComboBox3, JComboBox<String> jComboBox4, JComboBox<String> jComboBox5, JComboBox<String> jComboBox6, JLabel jLabel1, JLabel jLabel10, JLabel jLabel11, JLabel jLabel12, JLabel jLabel13, JLabel jLabel14, JLabel jLabel15, JLabel jLabel2, JLabel jLabel3, JLabel jLabel4, JLabel jLabel5, JLabel jLabel6, JLabel jLabel7, JLabel jLabel8, JLabel jLabel9, JPanel jPanel1, JPanel jPanel2, JScrollPane jScrollPane1, JScrollPane jScrollPane2, JScrollPane jScrollPane3, JScrollPane jScrollPane4, JSeparator jSeparator1, JSeparator jSeparator2, JSeparator jSeparator3, JSeparator jSeparator4, JTabbedPane jTabbedPane1, JComboBox<String> listDaftarBarang, JTable tDaftarTransaksi, JTable tDetailTransaksi, JTable tableDetail) throws HeadlessException {
-        
+
         this.daftarJualModel = daftarJualModel;
         this.daftarJualList = daftarJualList;
         this.transaksi = transaksi;
@@ -138,8 +139,10 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     List<Transaksi> rekapTransaksi;
     List<TransaksiDetail> rekapTransaksiDetail;
+    List<TransaksiDetail> rekapReturDetail;
     DefaultTableModel modelRekapTransaksi;
     DefaultTableModel modelRekapTransaksiDetail;
+    DefaultTableModel modelReturDetailTransaksi;
     final String[] rekapTransaksiColumn = new String[]{"ID Transaksi", "Tanggal", "Tagihan", "Bayar", "Kembalian", "Keterangan"};
     final Object[][] tempRekapTransaksi = new Object[0][0];
 
@@ -148,8 +151,12 @@ public class FrameTransaksi extends javax.swing.JFrame {
         rekapTransaksi = dBHelperRekapTransaksi.selectTransaksi(start, end);
         modelRekapTransaksi = new DefaultTableModel(tempRekapTransaksi, rekapTransaksiColumn);
         modelRekapTransaksiDetail = new DefaultTableModel(tempRekapTransaksi, TransaksiDetail.namaKolom);
+        modelReturDetailTransaksi = new DefaultTableModel(tempRekapTransaksi, TransaksiDetail.namaKolom);
+
         tDaftarTransaksi.setModel(modelRekapTransaksi);
         tDetailTransaksi.setModel(modelRekapTransaksiDetail);
+        tReturTransaksi.setModel(modelRekapTransaksi);
+        tReturDetail.setModel(modelReturDetailTransaksi);
         for (int i = 0; i < rekapTransaksi.size(); i++) {
             modelRekapTransaksi.addRow(rekapTransaksi.get(i).getRow());
         }
@@ -166,6 +173,18 @@ public class FrameTransaksi extends javax.swing.JFrame {
             modelRekapTransaksiDetail.addRow(rekapTransaksiDetail.get(i).getRow());
         }
         modelRekapTransaksiDetail.fireTableDataChanged();
+        dBHelperDetailTransaksi.close();
+    }
+
+    private void initReturTransaksi(int idTransaksi) {
+        DBHelperRekapTransaksi dBHelperDetailTransaksi = new DBHelperRekapTransaksi();
+        rekapReturDetail = dBHelperDetailTransaksi.getDetailTransaksi(idTransaksi);
+        modelReturDetailTransaksi.setRowCount(0);
+
+        for (int i = 0; i < rekapReturDetail.size(); i++) {
+            modelReturDetailTransaksi.addRow(rekapReturDetail.get(i).getRow());
+        }
+        modelReturDetailTransaksi.fireTableDataChanged();
         dBHelperDetailTransaksi.close();
     }
 
@@ -212,7 +231,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     private boolean isStockAvailable(int idBarang, double jumlahBeli) {
         double stok;
-        
+
         DBHelperTransaksi dbHelper = new DBHelperTransaksi();
         stok = dbHelper.getStokBarang(idBarang);
         dbHelper.close();
@@ -301,7 +320,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             isiJurnal();
             initData();
             initDataTransaksi(-1, -1);
-            
+
         } else {
             JOptionPane.showMessageDialog(rootPane, "Pembayaran tidak mencukupi", "Peringatan", JOptionPane.ERROR_MESSAGE);
             iBayar.requestFocus();
@@ -311,11 +330,11 @@ public class FrameTransaksi extends javax.swing.JFrame {
     private void isiJurnal() {
         double hargaTotal = getGrandTotal();
         double hargaKulak = 0;
-        
+
         DBBarang dbBarang = new DBBarang();
         long tanggal = transaksi.getTanggal();
         for (int i = 0; i < transaksiDetail.size(); i++) {
-            hargaKulak += dbBarang.getHargaKulakSatuan(transaksiDetail.get(i).getIdBarang())*transaksiDetail.get(i).getJumlah();
+            hargaKulak += dbBarang.getHargaKulakSatuan(transaksiDetail.get(i).getIdBarang()) * transaksiDetail.get(i).getJumlah();
         }
         dbBarang.close();
         DBKeuangan dbUang = new DBKeuangan();
@@ -331,6 +350,114 @@ public class FrameTransaksi extends javax.swing.JFrame {
         dbUang.tambahSaldoKredit(DBKeuangan.Akun.pendapatan, pendapatan);
 
         dbUang.close();
+    }
+
+    List<ReturKonsumen> dataReturKonsumen;
+    DefaultTableModel modelReturKonsumen;
+    double nominalRetur;
+
+    public void initReturKonsumen() {
+        dataReturKonsumen = new ArrayList<>();
+        modelReturKonsumen = new DefaultTableModel(new Object[0][0], ReturKonsumen.columnName);
+        tDaftarRetur.setModel(modelReturKonsumen);
+        nominalRetur = 0;
+        iJumlahRetur.setText(0 + "");
+        iKetRetur.setText("");
+        iNominal.setText("");
+    }
+
+    public void tambahKeDaftarRetur() {
+        if (tReturDetail.getSelectedRow() != -1 && !iJumlahRetur.getText().isEmpty()) {
+            double jumlahRetur = Double.parseDouble(iJumlahRetur.getText());
+            int row = tReturDetail.getSelectedRow();
+            if (cekRetur(row, jumlahRetur)) {
+                nominalRetur += rekapReturDetail.get(row).getHargaSatuan() * jumlahRetur;
+                dataReturKonsumen.add(rekapReturDetail.get(row).getRetur(jumlahRetur));
+            }
+            reloadNominal();
+            reloadDaftarRetur();
+        }
+    }
+
+    public void reloadNominal() {
+        iNominal.setText(nominalRetur + "");
+    }
+
+    public boolean cekRetur(int index, double jumlah) {
+        if (rekapReturDetail.get(index).getJumlah() < jumlah) {
+            iJumlahRetur.setForeground(Color.red);
+            return false;
+        }
+        iJumlahRetur.setForeground(Color.black);
+        return true;
+    }
+
+    public void reloadDaftarRetur() {
+        modelReturKonsumen.setRowCount(0);
+        for (int i = 0; i < dataReturKonsumen.size(); i++) {
+            modelReturKonsumen.addRow(dataReturKonsumen.get(i).getRow());
+        }
+        modelReturKonsumen.fireTableDataChanged();
+    }
+
+    public void simpanRetur() {
+        if (cekSimpanRetur()) {
+            // ambil harga kulaknya
+            DBBarang dbuang = new DBBarang();
+            for (int i = 0; i < dataReturKonsumen.size(); i++) {
+                double hk = dbuang.getHargaKulakSatuan(dataReturKonsumen.get(i).getIdBarang());
+                dataReturKonsumen.get(i).setHargaKulak(hk);
+            }
+            dbuang.close();
+            
+            // simpan returnya
+            DBHelperTransaksi dbtr = new DBHelperTransaksi();
+            for (int i = 0; i < dataReturKonsumen.size(); i++) {
+                dbtr.insertReturKonsumen(dataReturKonsumen.get(i).getIdTransaksi(),
+                        dataReturKonsumen.get(i).getIdBarang(),
+                        dataReturKonsumen.get(i).getJumlah(),
+                        iKetRetur.getText(),
+                        iTanggalRetur.getDate().getTime());
+            }
+            dbtr.close();
+            
+            // update stoknya
+            DBBarang dbbrg = new DBBarang();
+            for (int i = 0; i < dataReturKonsumen.size(); i++) {
+                dbbrg.stokMasuk(dataReturKonsumen.get(i).getIdBarang(), dataReturKonsumen.get(i).getJumlah());
+            }
+            dbbrg.close();
+            
+            // masukkan keuangannya
+            DBKeuangan dbk = new DBKeuangan();
+            for (int i = 0; i < dataReturKonsumen.size(); i++) {
+                double hargaKulak = dataReturKonsumen.get(i).getHargaKulak();
+                double hargaJual = dataReturKonsumen.get(i).getHargaJual();
+                double jmlqty = dataReturKonsumen.get(i).getJumlah();
+                double kurangPendapatan =(hargaJual-hargaKulak)*jmlqty;
+                double kurasKas = hargaJual*jmlqty;
+                double tambahPersediaan = hargaKulak*jmlqty;
+                dbk.setDebet(DBKeuangan.Akun.persediaan, tambahPersediaan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
+                dbk.tambahSaldoDebet(DBKeuangan.Akun.persediaan, tambahPersediaan);
+                dbk.setKredit(DBKeuangan.Akun.kas, kurasKas, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
+                dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, kurasKas);
+                dbk.setDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
+                dbk.tambahSaldoDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan);  
+            }
+            dbk.close();
+        }
+    }
+
+    public boolean cekSimpanRetur() {
+        if (dataReturKonsumen.isEmpty()) {
+            JOptionPane.showMessageDialog(rootPane, "Belum ada barang dipilih");
+            return false;
+        }
+        if (iTanggalRetur.getDate() == null) {
+            JOptionPane.showMessageDialog(rootPane, "Tanggal belum ditentukan");
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -388,6 +515,26 @@ public class FrameTransaksi extends javax.swing.JFrame {
         dateEnd = new org.jdesktop.swingx.JXDatePicker();
         setTanggal = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tReturTransaksi = new javax.swing.JTable();
+        jLabel17 = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        tReturDetail = new javax.swing.JTable();
+        jLabel18 = new javax.swing.JLabel();
+        iJumlahRetur = new javax.swing.JTextField();
+        bTambahDaftarRetur = new javax.swing.JButton();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        tDaftarRetur = new javax.swing.JTable();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
+        iTanggalRetur = new org.jdesktop.swingx.JXDatePicker();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        iKetRetur = new javax.swing.JTextArea();
+        jButton5 = new javax.swing.JButton();
+        iNominal = new javax.swing.JTextField();
+        jLabel21 = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -561,7 +708,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(178, 178, 178)
                 .addComponent(bHapus)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 271, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel5)
@@ -616,7 +763,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(iKembalian, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel10))
-                    .addContainerGap(169, Short.MAX_VALUE)))
+                    .addContainerGap(263, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("Transaksi", jPanel1);
@@ -729,15 +876,170 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Data Transaksi", jPanel2);
 
+        jLabel13.setText("Pilih Transaksi");
+
+        tReturTransaksi.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        tReturTransaksi.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tReturTransaksiMouseClicked(evt);
+            }
+        });
+        jScrollPane5.setViewportView(tReturTransaksi);
+
+        jLabel17.setText("Tambahkan retur barang");
+
+        tReturDetail.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane6.setViewportView(tReturDetail);
+
+        jLabel18.setText("Jumlah Retur");
+
+        iJumlahRetur.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                iJumlahReturKeyReleased(evt);
+            }
+        });
+
+        bTambahDaftarRetur.setText("Tambah");
+        bTambahDaftarRetur.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bTambahDaftarReturActionPerformed(evt);
+            }
+        });
+
+        tDaftarRetur.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {},
+                {},
+                {},
+                {}
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane7.setViewportView(tDaftarRetur);
+
+        jLabel19.setText("Tanggal");
+
+        jLabel20.setText("Keterangan");
+
+        iKetRetur.setColumns(20);
+        iKetRetur.setRows(5);
+        jScrollPane8.setViewportView(iKetRetur);
+
+        jButton5.setText("Simpan");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        iNominal.setEditable(false);
+
+        jLabel21.setText("Nominal retur");
+
+        jButton4.setText("Reset");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 650, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane7)
+                    .addComponent(jScrollPane5)
+                    .addComponent(jScrollPane6)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 181, Short.MAX_VALUE)
+                        .addComponent(iJumlahRetur, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bTambahDaftarRetur, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel19))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton5))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel20)
+                            .addComponent(jLabel21))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(iNominal)
+                            .addComponent(iTanggalRetur, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 632, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel13)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel17)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel18)
+                    .addComponent(iJumlahRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bTambahDaftarRetur))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel19)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel20))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(iTanggalRetur, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(iNominal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel21))
+                .addGap(20, 20, 20)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton5)
+                    .addComponent(jButton4))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Retur", jPanel3);
@@ -846,6 +1148,39 @@ public class FrameTransaksi extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_setTanggalActionPerformed
 
+    private void tReturTransaksiMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tReturTransaksiMouseClicked
+        // TODO add your handling code here:
+        int selectedRow = tReturTransaksi.getSelectedRow();
+        System.out.println("say something " + selectedRow);
+        if (tReturTransaksi.getSelectedRow() >= 0) {
+            initReturTransaksi(rekapTransaksi.get(selectedRow).getIdTransaksi());
+        }
+    }//GEN-LAST:event_tReturTransaksiMouseClicked
+
+    private void bTambahDaftarReturActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTambahDaftarReturActionPerformed
+        // TODO add your handling code here:
+        tambahKeDaftarRetur();
+    }//GEN-LAST:event_bTambahDaftarReturActionPerformed
+
+    private void iJumlahReturKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_iJumlahReturKeyReleased
+        // TODO add your handling code here:
+        if (tReturDetail.getSelectedRow() != -1 && !iJumlahRetur.getText().isEmpty()) {
+            cekRetur(tReturDetail.getSelectedRow(), Double.parseDouble(iJumlahRetur.getText()));
+        }
+    }//GEN-LAST:event_iJumlahReturKeyReleased
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        // TODO add your handling code here:
+        simpanRetur();
+        initReturKonsumen();
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+        
+        initReturKonsumen();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -883,27 +1218,40 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bHapus;
+    private javax.swing.JButton bTambahDaftarRetur;
     private org.jdesktop.swingx.JXDatePicker dateEnd;
     private org.jdesktop.swingx.JXDatePicker dateStart;
     private javax.swing.JTextField iBayar;
     private javax.swing.JTextField iHarga;
     private javax.swing.JTextField iJumlahBeli;
+    private javax.swing.JTextField iJumlahRetur;
     private javax.swing.JTextField iKembalian;
+    private javax.swing.JTextArea iKetRetur;
     private javax.swing.JTextArea iKeterangan;
     private javax.swing.JTextField iNamaBarang;
+    private javax.swing.JTextField iNominal;
     private javax.swing.JTextField iStok;
+    private org.jdesktop.swingx.JXDatePicker iTanggalRetur;
     private javax.swing.JTextField iTotal;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -918,6 +1266,10 @@ public class FrameTransaksi extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
@@ -925,8 +1277,11 @@ public class FrameTransaksi extends javax.swing.JFrame {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JComboBox<String> listDaftarBarang;
     private javax.swing.JButton setTanggal;
+    private javax.swing.JTable tDaftarRetur;
     private javax.swing.JTable tDaftarTransaksi;
     private javax.swing.JTable tDetailTransaksi;
+    private javax.swing.JTable tReturDetail;
+    private javax.swing.JTable tReturTransaksi;
     private javax.swing.JTable tableDetail;
     // End of variables declaration//GEN-END:variables
 }

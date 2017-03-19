@@ -221,6 +221,21 @@ public class DBHelperTransaksi {
         }
         return daftarJual;
     }
+    
+    public void insertReturKonsumen(int idTransaksi, int idBarang, double jumlah, String keterangan, long tanggal){
+        String sql = "insert into retur_konsumen values (null, ?,?,?,?,?)";
+        try {
+            PreparedStatement ps = c.prepareStatement(sql);
+            ps.setInt(1, idTransaksi);
+            ps.setInt(2, idBarang);
+            ps.setDouble(3, jumlah);
+            ps.setString(4, keterangan);
+            ps.setLong(5, tanggal);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public void close() {
         try {
