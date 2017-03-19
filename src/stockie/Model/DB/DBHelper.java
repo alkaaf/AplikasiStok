@@ -28,7 +28,7 @@ public class DBHelper {
 
     public DBHelper() {
         try {
-            c = DriverManager.getConnection("jdbc:sqlite://" + C.DB_PATH);
+            c = DriverManager.getConnection("jdbc:sqlite:" + C.DB_PATH);
         } catch (SQLException ex) {
             Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
