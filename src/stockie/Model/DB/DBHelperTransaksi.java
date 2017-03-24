@@ -132,7 +132,7 @@ public class DBHelperTransaksi {
                 + Table.TransaksiDetail.IDTRANSAKSI + ","
                 + Table.TransaksiDetail.IDBARANG + ","
                 + Table.TransaksiDetail.JUMLAH + ","
-                +Table.TransaksiDetail.HARGATOTAL
+                + Table.TransaksiDetail.HARGATOTAL
                 + ") values (?,?,?,?)";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
@@ -151,7 +151,7 @@ public class DBHelperTransaksi {
         double newStok = oldStok - val;
         System.out.println("Oldstok " + oldStok);
         System.out.println("newStok " + newStok);
-        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=?";
+        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=0";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setDouble(1, newStok);
@@ -168,7 +168,7 @@ public class DBHelperTransaksi {
         double newStok = oldStok + val;
         System.out.println("Oldstok " + oldStok);
         System.out.println("newStok " + newStok);
-        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=?";
+        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=0";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setDouble(1, newStok);
@@ -199,6 +199,8 @@ public class DBHelperTransaksi {
                 + "stok." + Table.BarangStok.IDBARANG + " = data." + Table.DataBarang.IDBARANG + " and "
                 + "data." + Table.DataBarang.IDBARANG + " = harga." + Table.BarangHarga.IDBARANG + " and "
                 + "satuan." + Table.DataSatuan.IDSATUAN + " = data." + Table.DataBarang.IDSATUAN + " and "
+                //                + "data." + Table.DataBarang.JENIS + " = stok." + Table.BarangStok.JENIS + " and "
+                + "stok." + Table.BarangStok.JENIS + "=0 and "
                 + "data." + Table.DataBarang.HAPUS + " = 0 "
                 + "order by " + Table.DataBarang.NAMA_BARANG + " ";
         ;
@@ -221,8 +223,54 @@ public class DBHelperTransaksi {
         }
         return daftarJual;
     }
-    
-    public void insertReturKonsumen(int idTransaksi, int idBarang, double jumlah, String keterangan, long tanggal){
+
+    public List<DaftarJual> getAllBarang() {
+        List<DaftarJual> daftarJual = new ArrayList<>();
+        ResultSet rs;
+        String query = "select "
+                + "stok." + Table.BarangStok.STOK + ", "
+                + "harga." + Table.BarangHarga.IDBARANG + ", "
+                + "data." + Table.DataBarang.NAMA_BARANG + ", "
+                + "harga." + Table.BarangHarga.QTY + ", "
+                + "satuan." + Table.DataSatuan.NAMA_SATUAN + ", "
+                + "harga." + Table.BarangHarga.HARGA + ", "
+                + "stok." + Table.BarangStok.JENIS + " "
+                + "from "
+                + Table.BarangStok.TABLE + " stok, "
+                + Table.DataBarang.TABLE + " data, "
+                + Table.BarangHarga.TABLE + " harga, "
+                + Table.DataSatuan.TABLE + " satuan "
+                + "where "
+                + "stok." + Table.BarangStok.IDBARANG + " = data." + Table.DataBarang.IDBARANG + " and "
+                + "data." + Table.DataBarang.IDBARANG + " = harga." + Table.BarangHarga.IDBARANG + " and "
+                + "satuan." + Table.DataSatuan.IDSATUAN + " = data." + Table.DataBarang.IDSATUAN + " and "
+                //                + "data." + Table.DataBarang.JENIS + " = stok." + Table.BarangStok.JENIS + " and "
+                //                + "stok."+Table.BarangStok.JENIS + "=0 and "
+                + "data." + Table.DataBarang.HAPUS + " = 0 "
+                + "order by " + Table.DataBarang.NAMA_BARANG + " ";
+        ;
+//        System.out.println(query1);
+//        System.out.println(query);
+        try {
+            rs = c.createStatement().executeQuery(query);
+            while (rs.next()) {
+                daftarJual.add(new DaftarJual(
+                        rs.getInt(Table.BarangHarga.IDBARANG),
+                        rs.getString(Table.DataBarang.NAMA_BARANG),
+                        rs.getDouble(Table.BarangStok.STOK),
+                        rs.getString(Table.DataSatuan.NAMA_SATUAN),
+                        rs.getDouble(Table.BarangHarga.QTY),
+                        rs.getDouble(Table.BarangHarga.HARGA),
+                        rs.getInt(Table.BarangStok.JENIS)
+                ));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return daftarJual;
+    }
+
+    public void insertReturKonsumen(int idTransaksi, int idBarang, double jumlah, String keterangan, long tanggal) {
         String sql = "insert into retur_konsumen values (null, ?,?,?,?,?)";
         try {
             PreparedStatement ps = c.prepareStatement(sql);

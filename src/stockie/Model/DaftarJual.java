@@ -19,8 +19,19 @@ public class DaftarJual {
     String satuan;
     double qty;
     double harga;
+    int jenis;
 
     public DaftarJual() {
+    }
+
+    public DaftarJual(int idBarang, String namaBarang, double stok, String satuan, double qty, double harga, int jenis) {
+        this.namaBarang = namaBarang;
+        this.idBarang = idBarang;
+        this.stok = stok;
+        this.satuan = satuan;
+        this.qty = qty;
+        this.harga = harga;
+        this.jenis = jenis;
     }
 
     public DaftarJual(int idBarang, String namaBarang, double stok, String satuan, double qty, double harga) {
@@ -89,15 +100,28 @@ public class DaftarJual {
             return String.format("[ID%d] %s", idBarang, namaBarang);
         }
     }
-    public String toStringStok(){
-        return String.format("[ID%d] (%.1f) %s", idBarang, stok, namaBarang);
+
+    public String toStringStok() {
+        if (jenis == 0) {
+            return String.format("[ID%d] (%.1f) %s", idBarang, stok, namaBarang);
+        } else {
+            return String.format("[ID%d] (%.1f) %s (Retur)", idBarang, stok, namaBarang);
+        }
+    }
+
+    public int getJenis() {
+        return jenis;
+    }
+
+    public void setJenis(int jenis) {
+        this.jenis = jenis;
     }
 
     public Vector getRow() {
-         Vector v = new Vector();
-         v.add(String.format("[ID%d]", idBarang));
-         v.add(namaBarang);
-         v.add(harga);
-         return v;
+        Vector v = new Vector();
+        v.add(String.format("[ID%d]", idBarang));
+        v.add(namaBarang);
+        v.add(harga);
+        return v;
     }
 }

@@ -39,6 +39,7 @@ public class Table {
         public static String NAMA_BARANG = "nama_barang";
         public static String IDSATUAN = "idsatuan";
         public static String HAPUS = "hapus";
+        public static String JENIS = "jenis";
     }
 
     public static class DataSatuan {
@@ -64,6 +65,7 @@ public class Table {
         public static String TABLE = "barang_stok";
         public static String IDBARANG = "idbarang";
         public static String STOK = "stok";
+        public static String JENIS = "jenis";
         public static String HAPUS = "hapus";
     }
 

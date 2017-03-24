@@ -27,6 +27,7 @@ public class DBKeuangan extends DBHelper {
 
         public static int kas = 1;
         public static int persediaan = 2;
+        public static int persediaanRetur = 9;
         public static int utang = 3;
         public static int modal = 4;
         public static int pendapatan = 5;

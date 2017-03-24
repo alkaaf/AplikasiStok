@@ -69,7 +69,7 @@ public class DBHelper {
         double newStok = oldStok - val;
         System.out.println("Oldstok " + oldStok);
         System.out.println("newStok " + newStok);
-        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=?";
+        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=0";
         try {
             PreparedStatement ps = c.prepareStatement(sql);
             ps.setDouble(1, newStok);
@@ -86,7 +86,7 @@ public class DBHelper {
         double newStok = oldStok + val;
         System.out.println("Oldstok " + oldStok);
         System.out.println("newStok " + newStok);
-        String sqlupdate = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=?";
+        String sqlupdate = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=0";
         String sqlinsert = "insert into " + Table.BarangStok.TABLE + "("
                 + Table.BarangStok.IDBARANG + ","
                 + Table.BarangStok.STOK + ") "
@@ -109,11 +109,69 @@ public class DBHelper {
         }
     }
 
+    public void stokKeluarRetur(int idBarang, double val) {
+        double oldStok = getStokBarangRetur(idBarang);
+        double newStok = oldStok - val;
+        System.out.println("Oldstok " + oldStok);
+        System.out.println("newStok " + newStok);
+        String sql = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=1";
+        try {
+            PreparedStatement ps = c.prepareStatement(sql);
+            ps.setDouble(1, newStok);
+            ps.setInt(2, idBarang);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public void stokMasukRetur(int idBarang, double val) {
+        double oldStok = getStokBarangRetur(idBarang);
+        double newStok = oldStok + val;
+        System.out.println("Oldstok " + oldStok);
+        System.out.println("newStok " + newStok);
+        String sqlupdate = "update " + Table.BarangStok.TABLE + " set " + Table.BarangStok.STOK + "=? where " + Table.BarangStok.IDBARANG + "=? and jenis=1";
+        String sqlinsert = "insert into " + Table.BarangStok.TABLE + "("
+                + Table.BarangStok.IDBARANG + ","
+                + Table.BarangStok.STOK + ","
+                + Table.BarangStok.JENIS+") "
+                + "values (?,?,1)";
+        try {
+            if (oldStok == 0) {
+                PreparedStatement ps = c.prepareStatement(sqlinsert);
+                ps.setInt(1, idBarang);
+                ps.setDouble(2, newStok);
+                ps.executeUpdate();
+            } else {
+                PreparedStatement ps = c.prepareStatement(sqlupdate);
+                ps.setDouble(1, newStok);
+                ps.setInt(2, idBarang);
+                ps.executeUpdate();
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     public double getStokBarang(int idBarang) {
         double stok = 0.0;
         ResultSet rs = null;
         try {
-            rs = c.createStatement().executeQuery("select " + Table.BarangStok.IDBARANG + ", " + Table.BarangStok.STOK + " from " + Table.BarangStok.TABLE + " where " + Table.BarangStok.IDBARANG + "=" + idBarang);
+            rs = c.createStatement().executeQuery("select " + Table.BarangStok.IDBARANG + ", " + Table.BarangStok.STOK + " from " + Table.BarangStok.TABLE + " where " + Table.BarangStok.IDBARANG + "=" + idBarang + " and jenis = 0");
+            if (!rs.isClosed()) {
+                stok = rs.getDouble(Table.BarangStok.STOK);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return stok;
+    }
+    public double getStokBarangRetur(int idBarang) {
+        double stok = 0.0;
+        ResultSet rs = null;
+        try {
+            rs = c.createStatement().executeQuery("select " + Table.BarangStok.IDBARANG + ", " + Table.BarangStok.STOK + " from " + Table.BarangStok.TABLE + " where " + Table.BarangStok.IDBARANG + "=" + idBarang + " and jenis = 1");
             if (!rs.isClosed()) {
                 stok = rs.getDouble(Table.BarangStok.STOK);
             }

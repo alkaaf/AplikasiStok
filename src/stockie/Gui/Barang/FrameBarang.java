@@ -57,6 +57,7 @@ public class FrameBarang extends javax.swing.JFrame {
 
     List<Retur> dataRetur;
     DefaultTableModel modelRetur;
+
     public void initHistoriRetur() {
         modelRetur = new DefaultTableModel(new Object[0][0], Retur.columnName);
         tRetur.setModel(modelRetur);
@@ -64,18 +65,19 @@ public class FrameBarang extends javax.swing.JFrame {
         dataRetur = db.selectRetur();
         for (int i = 0; i < dataRetur.size(); i++) {
             modelRetur.addRow(dataRetur.get(i).getRow());
-            
+
         }
         modelRetur.fireTableDataChanged();
         db.close();
     }
-    
+
     List<DaftarJual> dataBarangRetur;
     DefaultComboBoxModel<String> modelBarangRetur;
 
     public void initBarangRetur() {
         DBHelperTransaksi db = new DBHelperTransaksi();
-        dataBarangRetur = db.getBarangJual();
+//        dataBarangRetur = db.getBarangJual();
+        dataBarangRetur = db.getAllBarang();
         Vector v = new Vector();
         for (int i = 0; i < dataBarangRetur.size(); i++) {
             v.add(dataBarangRetur.get(i).toStringStok());
@@ -125,30 +127,54 @@ public class FrameBarang extends javax.swing.JFrame {
         if (listBarangRetur.getSelectedIndex() >= 0) {
             idBarangRetur = dataBarangRetur.get(listBarangRetur.getSelectedIndex()).getIdBarang();
         }
-        
-        if(iKeterangnaRetur.getText().length() > 0){
+
+        if (iKeterangnaRetur.getText().length() > 0) {
             ketRetur = iKeterangnaRetur.getText();
         }
-        // insert to retur;
-        DBBarang db = new DBBarang();
-        hargaKulak = db.getHargaKulakSatuan(idBarangRetur);
-        nominalRetur = hargaKulak * qtyRetur;
-        db.insertRetur(idBarangRetur, qtyRetur, tanggalRetur.getTime(), ketRetur, biayaRetur);
-        db.stokKeluar(idBarangRetur, qtyRetur);
-        db.close();
 
-        DBKeuangan dbk = new DBKeuangan();
-        nominalRetur = hargaKulak * qtyRetur;
-        dbk.setKredit(DBKeuangan.Akun.persediaan, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
-        dbk.tambahSaldoKredit(DBKeuangan.Akun.persediaan, nominalRetur);
-        dbk.setDebet(DBKeuangan.Akun.kas, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
-        dbk.tambahSaldoDebet(DBKeuangan.Akun.kas, nominalRetur);
+        if (dataBarangRetur.get(listBarangRetur.getSelectedIndex()).getJenis() == 0) {
+            // insert to retur;
+            DBBarang db = new DBBarang();
+            hargaKulak = db.getHargaKulakSatuan(idBarangRetur);
+            nominalRetur = hargaKulak * qtyRetur;
+            db.insertRetur(idBarangRetur, qtyRetur, tanggalRetur.getTime(), ketRetur, biayaRetur);
+            db.stokKeluar(idBarangRetur, qtyRetur);
+            db.close();
 
-        dbk.setKredit(DBKeuangan.Akun.kas, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
-        dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, biayaRetur);
-        dbk.setDebet(DBKeuangan.Akun.biayaRetur, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
-        dbk.tambahSaldoDebet(DBKeuangan.Akun.biayaRetur, biayaRetur);
-        dbk.close();
+            DBKeuangan dbk = new DBKeuangan();
+            nominalRetur = hargaKulak * qtyRetur;
+            dbk.setKredit(DBKeuangan.Akun.persediaan, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoKredit(DBKeuangan.Akun.persediaan, nominalRetur);
+            dbk.setDebet(DBKeuangan.Akun.kas, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoDebet(DBKeuangan.Akun.kas, nominalRetur);
+
+            dbk.setKredit(DBKeuangan.Akun.kas, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, biayaRetur);
+            dbk.setDebet(DBKeuangan.Akun.biayaRetur, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoDebet(DBKeuangan.Akun.biayaRetur, biayaRetur);
+            dbk.close();
+        } else {
+            // insert to retur;
+            DBBarang db = new DBBarang();
+            hargaKulak = db.getHargaKulakSatuan(idBarangRetur);
+            nominalRetur = hargaKulak * qtyRetur;
+            db.insertRetur(idBarangRetur, qtyRetur, tanggalRetur.getTime(), ketRetur, biayaRetur);
+            db.stokKeluarRetur(idBarangRetur, qtyRetur);
+            db.close();
+
+            DBKeuangan dbk = new DBKeuangan();
+            nominalRetur = hargaKulak * qtyRetur;
+            dbk.setKredit(DBKeuangan.Akun.persediaanRetur, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoKredit(DBKeuangan.Akun.persediaanRetur, nominalRetur);
+            dbk.setDebet(DBKeuangan.Akun.kas, nominalRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoDebet(DBKeuangan.Akun.kas, nominalRetur);
+
+            dbk.setKredit(DBKeuangan.Akun.kas, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, biayaRetur);
+            dbk.setDebet(DBKeuangan.Akun.biayaRetur, biayaRetur, tanggalRetur.getTime(), "pengembalian barang " + String.format(C.SF_BARANG, idBarangRetur));
+            dbk.tambahSaldoDebet(DBKeuangan.Akun.biayaRetur, biayaRetur);
+            dbk.close();
+        }
         initData();
     }
 

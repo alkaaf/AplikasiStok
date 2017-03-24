@@ -424,7 +424,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             // update stoknya
             DBBarang dbbrg = new DBBarang();
             for (int i = 0; i < dataReturKonsumen.size(); i++) {
-                dbbrg.stokMasuk(dataReturKonsumen.get(i).getIdBarang(), dataReturKonsumen.get(i).getJumlah());
+                dbbrg.stokMasukRetur(dataReturKonsumen.get(i).getIdBarang(), dataReturKonsumen.get(i).getJumlah());
             }
             dbbrg.close();
             
@@ -437,8 +437,8 @@ public class FrameTransaksi extends javax.swing.JFrame {
                 double kurangPendapatan =(hargaJual-hargaKulak)*jmlqty;
                 double kurasKas = hargaJual*jmlqty;
                 double tambahPersediaan = hargaKulak*jmlqty;
-                dbk.setDebet(DBKeuangan.Akun.persediaan, tambahPersediaan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
-                dbk.tambahSaldoDebet(DBKeuangan.Akun.persediaan, tambahPersediaan);
+                dbk.setDebet(DBKeuangan.Akun.persediaanRetur, tambahPersediaan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
+                dbk.tambahSaldoDebet(DBKeuangan.Akun.persediaanRetur, tambahPersediaan);
                 dbk.setKredit(DBKeuangan.Akun.kas, kurasKas, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
                 dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, kurasKas);
                 dbk.setDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
