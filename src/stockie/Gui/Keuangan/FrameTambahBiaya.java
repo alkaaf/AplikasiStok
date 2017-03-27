@@ -180,6 +180,7 @@ public class FrameTambahBiaya extends javax.swing.JFrame {
     private void iSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iSimpanActionPerformed
         // TODO add your handling code here:
         simpan();
+        JOptionPane.showMessageDialog(rootPane, "Penambahan biaya telah disimpan");
     }//GEN-LAST:event_iSimpanActionPerformed
 
     private void listAkunItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_listAkunItemStateChanged

@@ -39,6 +39,9 @@ public class FrameBarang extends javax.swing.JFrame {
     public FrameBarang() {
         initComponents();
         initData();
+
+        // beta test
+        panelStokBarang.setVisible(false);
     }
 
     public void initData() {
@@ -48,6 +51,20 @@ public class FrameBarang extends javax.swing.JFrame {
         initSatuan();
         initAturHarga();
         initRetur();
+        clearInput();
+    }
+
+    public void clearInput() {
+        iNamaBarang.setText("");
+        iHarga.setText("");
+        iHargaJual.setText("");
+        iHargaSatuanBeli.setText("");
+        iQty.setText("");
+        iSelisihHarga.setText("");
+        iSatuanJual.setText("");
+        iQtyRetur.setText("");
+        iKeterangnaRetur.setText("");
+        iBiayaRetur.setText("");
     }
 
     public void initRetur() {
@@ -313,6 +330,7 @@ public class FrameBarang extends javax.swing.JFrame {
             pembelian.setIdAkun(idAkun);
             dd.insertPembelian(pembelian);
             dd.close();
+            JOptionPane.showMessageDialog(rootPane, "Pembelian barang telah disimpan");
             isiJurnal();
             initData();
         }
@@ -427,7 +445,7 @@ public class FrameBarang extends javax.swing.JFrame {
         jLabel19 = new javax.swing.JLabel();
         iAturHarga = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        panelStokBarang = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -757,16 +775,12 @@ public class FrameBarang extends javax.swing.JFrame {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel14)
-                                    .addComponent(jLabel15)
-                                    .addComponent(jLabel16)
-                                    .addComponent(jLabel17))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabel20)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jLabel14)
+                            .addComponent(jLabel15)
+                            .addComponent(jLabel16)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel20))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(iQtyRetur)
                             .addComponent(listBarangRetur, 0, 228, Short.MAX_VALUE)
@@ -881,18 +895,18 @@ public class FrameBarang extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Pengaturan Harga", jPanel3);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout panelStokBarangLayout = new javax.swing.GroupLayout(panelStokBarang);
+        panelStokBarang.setLayout(panelStokBarangLayout);
+        panelStokBarangLayout.setHorizontalGroup(
+            panelStokBarangLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 646, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        panelStokBarangLayout.setVerticalGroup(
+            panelStokBarangLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 570, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Stok Barang", jPanel2);
+        jTabbedPane1.addTab("Stok Barang", panelStokBarang);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1055,7 +1069,6 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -1070,6 +1083,7 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> listAkun;
     private javax.swing.JComboBox<String> listBarangRetur;
     private javax.swing.JComboBox<String> listSatuan;
+    private javax.swing.JPanel panelStokBarang;
     private javax.swing.JTable tBarang;
     private javax.swing.JTable tPembelian;
     private javax.swing.JTable tRetur;

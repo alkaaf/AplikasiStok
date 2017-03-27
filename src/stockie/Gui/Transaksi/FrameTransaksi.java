@@ -320,7 +320,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
             isiJurnal();
             initData();
             initDataTransaksi(-1, -1);
-
+            JOptionPane.showMessageDialog(rootPane, "Transaksi telah disimpan");
         } else {
             JOptionPane.showMessageDialog(rootPane, "Pembayaran tidak mencukupi", "Peringatan", JOptionPane.ERROR_MESSAGE);
             iBayar.requestFocus();
@@ -409,7 +409,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
                 dataReturKonsumen.get(i).setHargaKulak(hk);
             }
             dbuang.close();
-            
+
             // simpan returnya
             DBHelperTransaksi dbtr = new DBHelperTransaksi();
             for (int i = 0; i < dataReturKonsumen.size(); i++) {
@@ -420,31 +420,32 @@ public class FrameTransaksi extends javax.swing.JFrame {
                         iTanggalRetur.getDate().getTime());
             }
             dbtr.close();
-            
+
             // update stoknya
             DBBarang dbbrg = new DBBarang();
             for (int i = 0; i < dataReturKonsumen.size(); i++) {
                 dbbrg.stokMasukRetur(dataReturKonsumen.get(i).getIdBarang(), dataReturKonsumen.get(i).getJumlah());
             }
             dbbrg.close();
-            
+
             // masukkan keuangannya
             DBKeuangan dbk = new DBKeuangan();
             for (int i = 0; i < dataReturKonsumen.size(); i++) {
                 double hargaKulak = dataReturKonsumen.get(i).getHargaKulak();
                 double hargaJual = dataReturKonsumen.get(i).getHargaJual();
                 double jmlqty = dataReturKonsumen.get(i).getJumlah();
-                double kurangPendapatan =(hargaJual-hargaKulak)*jmlqty;
-                double kurasKas = hargaJual*jmlqty;
-                double tambahPersediaan = hargaKulak*jmlqty;
+                double kurangPendapatan = (hargaJual - hargaKulak) * jmlqty;
+                double kurasKas = hargaJual * jmlqty;
+                double tambahPersediaan = hargaKulak * jmlqty;
                 dbk.setDebet(DBKeuangan.Akun.persediaanRetur, tambahPersediaan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
                 dbk.tambahSaldoDebet(DBKeuangan.Akun.persediaanRetur, tambahPersediaan);
                 dbk.setKredit(DBKeuangan.Akun.kas, kurasKas, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
                 dbk.tambahSaldoKredit(DBKeuangan.Akun.kas, kurasKas);
                 dbk.setDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan, iTanggalRetur.getDate().getTime(), iKetRetur.getText());
-                dbk.tambahSaldoDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan);  
+                dbk.tambahSaldoDebet(DBKeuangan.Akun.pendapatan, kurangPendapatan);
             }
             dbk.close();
+            JOptionPane.showMessageDialog(rootPane, "Retur konsumen telah disimpan");
         }
     }
 
@@ -659,7 +660,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
                     .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -708,13 +709,13 @@ public class FrameTransaksi extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(178, 178, 178)
                 .addComponent(bHapus)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 391, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 357, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(28, 28, 28)
                 .addComponent(jButton3)
                 .addContainerGap())
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1073,6 +1074,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
         simpan();
+
     }//GEN-LAST:event_jButton3ActionPerformed
 
 
@@ -1177,7 +1179,6 @@ public class FrameTransaksi extends javax.swing.JFrame {
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
-        
         initReturKonsumen();
     }//GEN-LAST:event_jButton4ActionPerformed
 

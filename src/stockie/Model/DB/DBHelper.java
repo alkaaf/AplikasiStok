@@ -135,7 +135,7 @@ public class DBHelper {
         String sqlinsert = "insert into " + Table.BarangStok.TABLE + "("
                 + Table.BarangStok.IDBARANG + ","
                 + Table.BarangStok.STOK + ","
-                + Table.BarangStok.JENIS+") "
+                + Table.BarangStok.JENIS + ") "
                 + "values (?,?,1)";
         try {
             if (oldStok == 0) {
@@ -154,6 +154,7 @@ public class DBHelper {
             Logger.getLogger(DBHelperTransaksi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
     public double getStokBarang(int idBarang) {
         double stok = 0.0;
         ResultSet rs = null;
@@ -167,6 +168,7 @@ public class DBHelper {
         }
         return stok;
     }
+
     public double getStokBarangRetur(int idBarang) {
         double stok = 0.0;
         ResultSet rs = null;
@@ -196,6 +198,31 @@ public class DBHelper {
             Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
         return temp;
+    }
+
+    public void resetData() {
+        String sql[] = new String[]{
+            "delete from barang_harga",
+            "delete from barang_masuk",
+            "delete from barang_stok",
+            "delete from transaksi_detail",
+            "delete from transaksi",
+            "delete from retur_detail",
+            "delete from retur",
+            "delete from keuangan_jurnal",
+            "delete from keuangan_saldo",
+            "delete from retur_konsumen",
+            "delete from data_barang"
+        };
+        
+        for (int i = 0; i < sql.length; i++) {
+            try {
+                getConnection().createStatement().executeUpdate(sql[i]);
+                System.out.println(sql[i]+" Executed");
+            } catch (SQLException ex) {
+                Logger.getLogger(DBHelper.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     public Connection getConnection() {
