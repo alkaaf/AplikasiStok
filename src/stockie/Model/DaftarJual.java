@@ -5,6 +5,7 @@
  */
 package stockie.Model;
 
+import Constant.C;
 import java.util.Vector;
 
 /**
@@ -20,7 +21,7 @@ public class DaftarJual {
     double qty;
     double harga;
     int jenis;
-
+    public static String stokBarangColumnName[] = new String[]{"ID Barang", "Nama Barang", "Stok", "Jenis Stok"};
     public DaftarJual() {
     }
 
@@ -116,6 +117,10 @@ public class DaftarJual {
     public void setJenis(int jenis) {
         this.jenis = jenis;
     }
+    
+    public String getStrJenis(){
+        return jenis == 0 ? "Stok" : "Retur";
+    }
 
     public Vector getRow() {
         Vector v = new Vector();
@@ -123,5 +128,9 @@ public class DaftarJual {
         v.add(namaBarang);
         v.add(harga);
         return v;
+    }
+    
+    public Object[] getObjects(){
+        return new Object[]{String.format(C.SF_BARANG, idBarang), namaBarang, stok+" "+satuan, getStrJenis()};
     }
 }

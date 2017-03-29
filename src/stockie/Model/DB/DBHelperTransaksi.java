@@ -249,8 +249,6 @@ public class DBHelperTransaksi {
                 + "data." + Table.DataBarang.HAPUS + " = 0 "
                 + "order by " + Table.DataBarang.NAMA_BARANG + " ";
         ;
-//        System.out.println(query1);
-//        System.out.println(query);
         try {
             rs = c.createStatement().executeQuery(query);
             while (rs.next()) {

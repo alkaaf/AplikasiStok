@@ -5,11 +5,8 @@
  */
 package stockie.Model;
 
-import Constant.Table;
-import com.j256.ormlite.spring.DaoFactory;
 import java.util.Vector;
 import stockie.Anotate.Database;
-import stockie.Gui.FrameMain;
 
 /**
  *

@@ -148,6 +148,7 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
         iKetBukuBesar = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Laporan Keuangan");
 
         jLabel1.setText("Periode");
 
@@ -322,7 +323,7 @@ public class FrameLapKeuangan extends javax.swing.JFrame {
                         .addComponent(bukuEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton3))
-                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                    .addComponent(jScrollPane4)
                     .addComponent(jScrollPane3))
                 .addContainerGap())
         );

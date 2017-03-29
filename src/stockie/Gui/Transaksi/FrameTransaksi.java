@@ -538,6 +538,7 @@ public class FrameTransaksi extends javax.swing.JFrame {
         jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Transaksi");
 
         jLabel1.setText("Pilih Barang");
 

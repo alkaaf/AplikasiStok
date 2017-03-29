@@ -7,6 +7,7 @@ package stockie.Gui.Barang;
 
 import Constant.C;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -41,7 +42,7 @@ public class FrameBarang extends javax.swing.JFrame {
         initData();
 
         // beta test
-        panelStokBarang.setVisible(false);
+//        panelStokBarang.setVisible(false);
     }
 
     public void initData() {
@@ -52,6 +53,20 @@ public class FrameBarang extends javax.swing.JFrame {
         initAturHarga();
         initRetur();
         clearInput();
+        initStokBarang();
+    }
+    
+    public void initStokBarang(){
+        List<DaftarJual> stokSemuaBarang = new ArrayList<>();
+        DefaultTableModel modelStokSemuaBarang = new DefaultTableModel(new Object[0][0],DaftarJual.stokBarangColumnName);
+        tStokAllBarang.setModel(modelStokSemuaBarang);
+        DBHelperTransaksi db3 = new DBHelperTransaksi();
+        stokSemuaBarang = db3.getAllBarang();
+        for (int i = 0; i < stokSemuaBarang.size(); i++) {
+            modelStokSemuaBarang.addRow(stokSemuaBarang.get(i).getObjects());
+        }
+        modelStokSemuaBarang.fireTableDataChanged();
+       
     }
 
     public void clearInput() {
@@ -446,8 +461,11 @@ public class FrameBarang extends javax.swing.JFrame {
         iAturHarga = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
         panelStokBarang = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tStokAllBarang = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Manajemen Barang");
 
         jLabel1.setText("Data pembelian barang");
 
@@ -895,15 +913,34 @@ public class FrameBarang extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Pengaturan Harga", jPanel3);
 
+        tStokAllBarang.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane5.setViewportView(tStokAllBarang);
+
         javax.swing.GroupLayout panelStokBarangLayout = new javax.swing.GroupLayout(panelStokBarang);
         panelStokBarang.setLayout(panelStokBarangLayout);
         panelStokBarangLayout.setHorizontalGroup(
             panelStokBarangLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 646, Short.MAX_VALUE)
+            .addGroup(panelStokBarangLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+                .addContainerGap())
         );
         panelStokBarangLayout.setVerticalGroup(
             panelStokBarangLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 570, Short.MAX_VALUE)
+            .addGroup(panelStokBarangLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Stok Barang", panelStokBarang);
@@ -1077,6 +1114,7 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -1087,5 +1125,6 @@ public class FrameBarang extends javax.swing.JFrame {
     private javax.swing.JTable tBarang;
     private javax.swing.JTable tPembelian;
     private javax.swing.JTable tRetur;
+    private javax.swing.JTable tStokAllBarang;
     // End of variables declaration//GEN-END:variables
 }

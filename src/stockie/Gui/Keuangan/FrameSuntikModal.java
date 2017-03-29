@@ -100,6 +100,7 @@ public class FrameSuntikModal extends javax.swing.JFrame {
         iSimpan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Penambahan modal");
 
         jLabel1.setText("Jumlah Modal");
 

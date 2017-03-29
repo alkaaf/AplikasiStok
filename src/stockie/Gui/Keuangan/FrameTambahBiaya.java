@@ -99,6 +99,7 @@ public class FrameTambahBiaya extends javax.swing.JFrame {
         iSimpan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Penambahan biaya");
 
         jLabel1.setText("Jumlah Biaya");
 
